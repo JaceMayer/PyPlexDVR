@@ -1,0 +1,18 @@
+<tv generator-info-name='Jace' source-info-name='Jaces XML TV'>
+{% for channel in channels %}
+<channel id='{{channel.id}}'>
+<display-name>{{channel.name}}</display-name>
+<icon src=''/>
+</channel>
+<programme channel='{{channel.id}}' start='20990310200500 +0000' stop='20990310205041 +0000'>
+<title lang='en'>{{channel.name}}</title>
+<desc lang='en'>{{channel.name}}
+ </desc>
+<icon height='' src='' width=''/>
+<video/>
+<date/>
+<new/>
+</programme>
+
+{% endfor %}
+</tv>
