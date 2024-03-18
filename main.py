@@ -1,5 +1,6 @@
 from flask import Flask, Response, request, jsonify, abort, render_template, stream_with_context
 from channel import channel
+from streamChannel import streamChannel
 from config import dvrConfig
 
 app = Flask(__name__)
@@ -9,6 +10,9 @@ channelMap = {
 
 for channelDef in dvrConfig["Channels"]:
     channelMap[channelDef["id"]] = channel(channelDef)
+
+for channelDef in dvrConfig["Streams"]:
+    channelMap[channelDef["id"]] = streamChannel(channelDef)
 
 discoverData = {
     'BaseURL': 'http://%s:%s' % (dvrConfig["Server"]['bindAddr'], str(dvrConfig["Server"]['bindPort'])),

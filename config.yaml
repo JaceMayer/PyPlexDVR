@@ -7,6 +7,10 @@ Channels:
 - baseDir: /path/to/movies
   id: 1
   name: Movie Channel
+Streams:
+  - name: BBC One North West
+    id: 2
+    url: https://vs-cmaf-pushb-uk-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_one_north_west/pc_hd_abr_v2.mpd
 DVR:
   friendlyName: PyPlexDVR
   tunerCount: 100
