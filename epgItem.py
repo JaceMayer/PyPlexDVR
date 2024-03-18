@@ -13,11 +13,14 @@ class epgItem:
         self.length = 0
         self.startTime = None
         self.endTime = None
-        self.getEPGData()
+        if channelBaseDir != None:
+            self.getEPGData()
 
     def getEPGData(self):
-        self.title = self.path.split(self.baseDir)[1].split('/')[0]
-        self.title = self.title.encode('utf-8').strip().decode()
+        title = self.path.split(self.baseDir)[1].split('/')[0]
+        if title == "":
+            title = self.path.split(self.baseDir)[1][1:-3]
+        self.title = title.encode('utf-8').strip().decode()
         try:
             show = self.t.search(self.title)
             self.desc = show[0]['overview']
@@ -32,10 +35,8 @@ class epgItem:
         self.length = self.getLength()
 
     def getLength(self):
-        print("Getting length for path %s" % self.path)
         try:
             duration = mp.VideoFileClip(self.path).duration / 60
-            print("%s duration = %s" % (self.path, str(duration)))
             return duration
         except:
             print("Unable to get Duration for %s" % self.path)
