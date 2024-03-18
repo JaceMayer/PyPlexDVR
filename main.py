@@ -52,7 +52,7 @@ def stream(channel):
                     yield buffer.pop(0)
         except GeneratorExit:
             channelMap[channel].removeBuffer(buffer)
-    return Response(generate(channel), mimetype='video/MP2T')
+    return Response(generate(int(channel)), mimetype='video/MP2T')
 
 
 @app.route('/lineup_status.json')
