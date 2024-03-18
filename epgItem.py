@@ -1,26 +1,23 @@
 import tvdb_v4_official
 import moviepy.editor as mp
-import os
+from config import dvrConfig
 
 class epgItem:
-    t = tvdb_v4_official.TVDB("feb18639-a308-40c4-a988-9c822574e5ba")
+
     def __init__(self, path):
+        self.t = tvdb_v4_official.TVDB(dvrConfig["EPG"]["TMDBAPIKey"])
         self.path = path
         self.title = ""
         self.desc = ""
         self.length = 0
         self.startTime = None
         self.endTime = None
-        print("finding EPG Data for item %s" % path)
         self.getEPGData()
 
     def getEPGData(self):
         if '/Volumes/Storage/TV' in self.path:
-            print("TV Show")
             self.title = self.path.split('/Volumes/Storage/TV/')[1].split('/')[0]
-            print(self.title)
             self.title = self.title.encode('utf-8').strip().decode()
-            print(self.title)
             try:
                 show = self.t.search(self.title)
                 self.desc = show[0]['overview']
@@ -39,7 +36,7 @@ class epgItem:
             res = self.t.search(self.path[:firstbracket].replace('.', ' '))
             if len(res) == 0:
                 dateLoc = self.path.find("20")
-                res =  self.t.search(self.path[:dateLoc].replace('.', ' '))
+                res = self.t.search(self.path[:dateLoc].replace('.', ' '))
                 if len(res) == 0:
                     print("Giving up on matching %s" % self.path)
                     self.title = "A movie"
@@ -55,7 +52,7 @@ class epgItem:
     def getLength(self):
         print("Getting length for path %s" % self.path)
         try:
-            duration =  mp.VideoFileClip(self.path).duration / 60
+            duration = mp.VideoFileClip(self.path).duration / 60
             print("%s duration = %s" % (self.path, str(duration)))
             return duration
         except:

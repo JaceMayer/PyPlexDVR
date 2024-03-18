@@ -11,9 +11,9 @@ class channelBuffer:
     def pop(self, index):
         if time.time() < self.startTime + 3:
             return b'' 
-        if self.buffer != None and len(self.buffer) != 0:
+        if self.buffer is not None and len(self.buffer) != 0:
             return self.buffer.pop(index)
-        elif self.buffer != None and len(self.buffer) == 0:
+        elif self.buffer is not None and len(self.buffer) == 0:
             print("Client has exhausted buffer.")
             
         return b''
@@ -22,7 +22,7 @@ class channelBuffer:
         self.buffer = None
 
     def length(self):
-        if self.buffer != None:
+        if self.buffer is not None:
             return len(self.buffer)
         else:
             return 0

@@ -2,26 +2,29 @@ import os
 import subprocess
 import random
 import threading
-import time
 import math
 from channelBuffer import channelBuffer
 from epgItem import epgItem
 from datetime import datetime, timedelta
+from config import dvrConfig
 
 class channel:
     
-    def __init__(self, id, name, config, scanPaths):
-        self.id = id
-        self.name = name
-        self.url = 'http://%s:%s/stream/%s' % (config["bindAddr"], config["port"], id)
-        self.scanDir = config['scanDir']
-        self.scanPaths = scanPaths
+    def __init__(self, channelDef):
+        self.id = channelDef["id"]
+        self.name = channelDef["name"]
+        self.url = 'http://%s:%s/stream/%s' % (dvrConfig["Server"]['bindAddr'], dvrConfig["Server"]['bindPort'], self.id)
+        self.scanDir = channelDef["baseDir"]
+        if "showDirs" in channelDef:
+            self.scanPaths = channelDef["showDirs"]
+        else:
+            self.scanPaths = [""]
         self.showPaths = []
         self.ranShows = []
         self.epgData = {}
         self.scanShows()
         self.buffer = []
-        t = threading.Thread(target=self.runChannel, args = ())
+        t = threading.Thread(target=self.runChannel, args=())
         t.start()
         self.createEPGItems()
 

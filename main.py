@@ -1,52 +1,41 @@
-import time
-import os
-import requests
 from flask import Flask, Response, request, jsonify, abort, render_template, stream_with_context
 from channel import channel
 from movieChannel import movieChannel
+from config import dvrConfig
 
 app = Flask(__name__)
 
-config = {
-    'bindAddr': '192.168.2.1',
-    'port': 5004,
-    'friendlyName': 'HomeTV',
-    'scanDir': '/Volumes/Storage/TV/',
-    'movieDir': '/Volumes/Storage/Movies'
-}
-global channelMap
 channelMap = {
-    "id-0": channel("id-0", "Star Trek TV", config, ["Star Trek Deep Space Nine (1993)", "Star Trek Voyager (1995)", "Star Trek Strange New Worlds (2022)", 'Star Trek The Next Generation (1987)', 'Star Trek Prodigy',
-        'Star Trek Picard', 'Star Trek Lower Decks (2020)', 'Star Trek Discovery (2017)', 'Star Trek (1966)']),
-    "id-1": channel("id-1", "Cartoons", config, ["Hazbin Hotel", "Sonic Underground", 
-        "Top Cat", "Super Mario World", "Steven Universe (2013)", "Steven Universe Future (2019)",
-        "Adventure Time Fionna and Cake"]),
-    "id-2": channel("id-2", "Dramas", config, ["Chicago Med", "Reverie", "Major Crimes", "Law and Order SVU"]),
-    "id-3": movieChannel("id-3", "Movies", config, [""])
 }
 
+for channelDef in dvrConfig["Channels"]:
+    channelMap[channelDef["id"]] = channel(channelDef)
+
 discoverData = {
-    'BaseURL': 'http://%s:%s' % (config['bindAddr'], str(config['port'])),
+    'BaseURL': 'http://%s:%s' % (dvrConfig["Server"]['bindAddr'], str(dvrConfig["Server"]['bindPort'])),
     'DeviceAuth': 'pytv',
     'DeviceID': 'pytv-1',
     'FirmwareName': 'bin_1.0.0',
     'FirmwareVersion': '1.0.0',
-    'FriendlyName': config['friendlyName'],
-    'LineupURL': 'http://%s:%s/lineup.json' % (config['bindAddr'], str(config['port'])), 
+    'FriendlyName': dvrConfig['DVR']['friendlyName'],
+    'LineupURL': 'http://%s:%s/lineup.json' % (dvrConfig["Server"]['bindAddr'], str(dvrConfig["Server"]['bindPort'])),
     'Manufacturer': "Python",
     'ModelNumber': '1.0.0',
-    'TunerCount': 100
+    'TunerCount': dvrConfig['DVR']['tunerCount']
 }
+
 
 @app.route('/discover.json')
 def discover():
     return jsonify(discoverData)
 
+
 @app.route('/')
 @app.route('/device.xml')
 @app.route('/capability')
 def device():
-    return render_template('device.xml',data = discoverData),{'Content-Type': 'application/xml'}
+    return render_template('device.xml',data=discoverData),{'Content-Type': 'application/xml'}
+
 
 @app.route('/epg.xml')
 def epg():
@@ -65,10 +54,12 @@ def stream(channel):
             channelMap[channel].removeBuffer(buffer)
     return Response(generate(channel), mimetype='video/MP2T')
 
+
 @app.route('/lineup_status.json')
 def status():
     status = {'ScanInProgress':0,'ScanPossible':0, 'Source': 'Cable', 'SourceList':['Cable']}
     return jsonify(status)
+
 
 @app.route('/lineup.json')
 def lineup():
@@ -78,5 +69,6 @@ def lineup():
         lineup.append({"GuideName": cl.name, "GuideNumber": cl.id, "URL": cl.url})
     return jsonify(lineup)
 
+
 if __name__ == '__main__':
-    app.run(host=config['bindAddr'], port=config['port'], debug=False)
+    app.run(host=dvrConfig["Server"]['bindAddr'], port=dvrConfig["Server"]['bindPort'], debug=False)

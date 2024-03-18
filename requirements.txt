@@ -1,0 +1,4 @@
+Flask~=3.0.2
+tvdb_v4_official
+moviepy
+pyyaml
