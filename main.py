@@ -1,6 +1,5 @@
 from flask import Flask, Response, request, jsonify, abort, render_template, stream_with_context
 from channel import channel
-from movieChannel import movieChannel
 from config import dvrConfig
 
 app = Flask(__name__)
