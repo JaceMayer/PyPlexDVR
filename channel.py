@@ -3,8 +3,10 @@ import subprocess
 import random
 import threading
 import time
+import math
 from channelBuffer import channelBuffer
-
+from epgItem import epgItem
+from datetime import datetime, timedelta
 
 class channel:
     
@@ -16,10 +18,20 @@ class channel:
         self.scanPaths = scanPaths
         self.showPaths = []
         self.ranShows = []
+        self.epgData = {}
         self.scanShows()
         self.buffer = []
         t = threading.Thread(target=self.runChannel, args = ())
         t.start()
+        self.createEPGItems()
+
+    def createEPGItems(self):
+        time = datetime.now()
+        for item in self.showPaths:
+            self.epgData[item] = epgItem(item)
+            self.epgData[item].startTime = time.strftime("%Y%m%d%H%M%S")
+            time += timedelta(minutes=math.ceil(self.epgData[item].length))
+            self.epgData[item].endTime = time.strftime("%Y%m%d%H%M%S")
 
     def isScannedFileVideo(self, file):
         if file.startswith('.') or file.endswith(".part"):
@@ -70,7 +82,7 @@ class channel:
     def runChannel(self):
         print('Starting FFMPEG channel %s' % self.name)
         while True:
-            cmd = ["ffmpeg", "-re", "-i", self.getShow(), "-q:v", "1", "-movflags", "frag_keyframe+empty_moov", "-f", "mpegts", "-"]
+            cmd = ["ffmpeg","-v", "error", "-re", "-i", self.getShow(), "-q:v", "15","-acodec", "mp3", "-vf", "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,setsar=1", "-f", "mpegts",  "-"]
             try:
                 process = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, bufsize =0)
             except Exception as e:

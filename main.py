@@ -3,6 +3,7 @@ import os
 import requests
 from flask import Flask, Response, request, jsonify, abort, render_template, stream_with_context
 from channel import channel
+from movieChannel import movieChannel
 
 app = Flask(__name__)
 
@@ -10,7 +11,8 @@ config = {
     'bindAddr': '192.168.2.1',
     'port': 5004,
     'friendlyName': 'HomeTV',
-    'scanDir': '/Volumes/Storage/TV/'
+    'scanDir': '/Volumes/Storage/TV/',
+    'movieDir': '/Volumes/Storage/Movies'
 }
 global channelMap
 channelMap = {
@@ -19,7 +21,8 @@ channelMap = {
     "id-1": channel("id-1", "Cartoons", config, ["Hazbin Hotel", "Sonic Underground", 
         "Top Cat", "Super Mario World", "Steven Universe (2013)", "Steven Universe Future (2019)",
         "Adventure Time Fionna and Cake"]),
-    "id-2": channel("id-2", "Dramas", config, ["Chicago Med", "Reverie", "Major Crimes"])
+    "id-2": channel("id-2", "Dramas", config, ["Chicago Med", "Reverie", "Major Crimes", "Law and Order SVU"]),
+    "id-3": movieChannel("id-3", "Movies", config, [""])
 }
 
 discoverData = {
