@@ -3,17 +3,19 @@ import subprocess
 import random
 import threading
 import math
-from channelBuffer import channelBuffer
-from epgItem import epgItem
+from channel.buffer import buffer
+from epg.item import item
 from datetime import datetime, timedelta
 from config import dvrConfig
+import logging
 
 
-class channel:
+class FFMPEG:
 
     def __init__(self, channelDef):
         self.id = channelDef["id"]
         self.name = channelDef["name"]
+        self.logger = logging.getLogger("FFMPEG-%s"%self.name)
         self.url = 'http://%s:%s/stream/%s' % (
         dvrConfig["Server"]['bindAddr'], dvrConfig["Server"]['bindPort'], self.id)
         self.scanDir = channelDef["baseDir"]
@@ -34,11 +36,11 @@ class channel:
 
     def createEPGItems(self):
         time = datetime.now()
-        for item in self.showPaths:
-            self.epgData[item] = epgItem(item, self.scanDir)
-            self.epgData[item].startTime = datetime.fromtimestamp(time.timestamp())
-            time += timedelta(minutes=math.ceil(self.epgData[item].length))
-            self.epgData[item].endTime = datetime.fromtimestamp(time.timestamp())
+        for show in self.showPaths:
+            self.epgData[show] = item(show, self.scanDir)
+            self.epgData[show].startTime = datetime.fromtimestamp(time.timestamp())
+            time += timedelta(minutes=math.ceil(self.epgData[show].length))
+            self.epgData[show].endTime = datetime.fromtimestamp(time.timestamp())
 
     def isScannedFileVideo(self, file):
         if file.startswith('.') or file.endswith(".part"):
@@ -63,41 +65,40 @@ class channel:
                     for seasonFile in os.listdir('%s/%s' % (path, file)):
                         if self.isScannedFileVideo(seasonFile):
                             self.showPaths.append('%s/%s/%s' % (path, file, seasonFile))
-        print("Scanning shows for channel %s complete - %s shows found" % (self.name, str(len(self.showPaths))))
+        self.logger.debug("Scanning shows for channel %s complete - %s shows found" % (self.name, str(len(self.showPaths))))
         self.shuffleShows()
 
     def getShow(self):
-        print("Getting show + StartTime for channel %s" % self.name)
+        self.logger.debug("Getting show + StartTime for channel %s" % self.name)
         availShows = sorted([item for name, item in self.epgData.items() if item.endTime > datetime.now() + timedelta(minutes=2)], key=lambda epgItem: epgItem.startTime)
-        print("Found %s available Shows" % len(availShows))
+        self.logger.debug("Found %s available Shows" % len(availShows))
         if len(availShows) == 0:
-            print("Available show list Empty")
+            self.logger.warning("Available show list Empty")
             self.shuffleShows()
             self.createEPGItems()
         show = availShows.pop(0)
-        print('Running show %s' % show.path)
+        self.logger.debug('Running show %s' % show.path)
         return show.path, datetime.now() - show.startTime
 
     def createBuffer(self):
         if not self.__channelOnAir:
-            print("Channel is off air - starting FFMPEG")
+            self.logger.debug("Channel is currently off air - starting FFMPEG process")
             self.__thread = threading.Thread(target=self.runChannel, args=())
             self.__thread.start()
-        buffer = channelBuffer()
-        self.buffer.append(buffer)
-        return buffer
+        clBuffer = buffer()
+        self.buffer.append(clBuffer)
+        return clBuffer
 
     def removeBuffer(self, buffer):
         buffer.destroy()
         self.buffer.remove(buffer)
         if len(self.buffer) == 0:
-            print("Nobody buffering this channel - killing FFMPEG")
+            self.logger.debug("Channel has 0 watchers, terminating FFMPEG")
             self.__subprocess.kill()
             self.__subprocess = None
             self.__channelOnAir = False
 
     def runChannel(self):
-        print('Starting FFMPEG channel %s' % self.name)
         self.__channelOnAir = True
         while True:
             showData = self.getShow()
@@ -105,7 +106,7 @@ class channel:
             hours, remainder = divmod(totalSeconds, 3600)
             minutes, seconds = divmod(remainder, 60)
             time = '%s:%s:%s' % (int(hours), int(minutes), int(math.ceil(seconds)))
-            print("Requesting FFMPEG Seek to %s" % time)
+            self.logger.debug("Requesting FFMPEG Seek to %s" % time)
             cmd = ["ffmpeg", "-v", "error", "-ss", time, "-re", "-i", showData[0], "-q:v", "15", "-acodec", "mp3", "-vf",
                    "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,setsar=1",
                    "-f", "mpegts", "-"]

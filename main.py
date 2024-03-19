@@ -1,20 +1,25 @@
-from flask import Flask, Response, request, jsonify, abort, render_template, stream_with_context
-from channel import channel
-from streamChannel import streamChannel
+import logging
+logging.basicConfig(filename="pyplexdvr.log", filemode="w", level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+from flask import Flask, Response, jsonify, render_template, stream_with_context
+from channel.FFMPEG import FFMPEG
+from channel.stream import stream
 from config import dvrConfig
 
 app = Flask(__name__)
+
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 
 channelMap = {
 }
 
 for channelDef in dvrConfig["Channels"]:
     channelDef["id"] = "ffmpeg-"+str(channelDef["id"])
-    channelMap[channelDef["id"]] = channel(channelDef)
+    channelMap[channelDef["id"]] = FFMPEG(channelDef)
 
 for channelDef in dvrConfig["Streams"]:
     channelDef["id"] = "stream-"+str(channelDef["id"])
-    channelMap[channelDef["id"]] = streamChannel(channelDef)
+    channelMap[channelDef["id"]] = stream(channelDef)
 
 discoverData = {
     'BaseURL': 'http://%s:%s' % (dvrConfig["Server"]['bindAddr'], str(dvrConfig["Server"]['bindPort'])),

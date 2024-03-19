@@ -1,10 +1,10 @@
 import tvdb_v4_official
 import moviepy.editor as mp
 from config import dvrConfig
-from epgCache import epgCache
+from .cache import cache
 
 
-class epgItem:
+class item:
     def __init__(self, path, channelBaseDir):
         self.path = path
         self.baseDir = channelBaseDir
@@ -33,9 +33,9 @@ class epgItem:
         if title == "":
             title = self.path.split(self.baseDir)[1][1:-3]
         self.title = title.encode('utf-8').strip().decode()
-        cache = epgCache(self.title)
-        cache.loadCacheIfExists()
-        if not cache.cacheLoaded or cache.getItemFromCache(self.path) is None:
+        EPGcache = cache(self.title)
+        EPGcache.loadCacheIfExists()
+        if not EPGcache.cacheLoaded or EPGcache.getItemFromCache(self.path) is None:
             self.t = tvdb_v4_official.TVDB(dvrConfig["EPG"]["TMDBAPIKey"])
             try:
                 show = self.t.search(self.title)
@@ -49,15 +49,15 @@ class epgItem:
                     print("Unable to find match for %s" % self.title)
                     self.desc = self.title
             self.length = self.getLength()
-            if not cache.cacheLoaded:
-                cache.cache["title"] = self.title
-                cache.cache["desc"] = self.desc
-            cache.addItemToCache(self.path, self.length)
-            cache.saveCacheToDisk()
+            if not EPGcache.cacheLoaded:
+                EPGcache.cache["title"] = self.title
+                EPGcache.cache["desc"] = self.desc
+            EPGcache.addItemToCache(self.path, self.length)
+            EPGcache.saveCacheToDisk()
         else:
-            self.length = cache.getItemFromCache(self.path)
-            self.desc = cache.cache["desc"]
-            self.title = cache.cache["title"]
+            self.length = EPGcache.getItemFromCache(self.path)
+            self.desc = EPGcache.cache["desc"]
+            self.title = EPGcache.cache["title"]
 
     def getLength(self):
         try:

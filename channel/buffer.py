@@ -1,6 +1,6 @@
 import time
 
-class channelBuffer:
+class buffer:
     def __init__(self):
         self.buffer = []
         self.startTime = time.time()

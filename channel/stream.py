@@ -1,17 +1,20 @@
 from config import dvrConfig
 import subprocess
 import threading
-from epgItem import epgItem
-from channelBuffer import channelBuffer
+from epg.item import item
+from channel.buffer import buffer
+import logging
 
-class streamChannel:
+
+class stream:
     def __init__(self, channelDef):
         self.name = channelDef["name"]
+        self.logger = logging.getLogger("Stream-%s"%self.name)
         self.id = channelDef["id"]
         self.stream = channelDef["url"]
         self.url = 'http://%s:%s/stream/%s' % (dvrConfig["Server"]['bindAddr'], dvrConfig["Server"]['bindPort'], self.id)
         self.epgData = {
-            "stream": epgItem("Stream", None)
+            "stream": item("Stream", None)
         }
         self.epgData["stream"].title = self.name
         self.epgData["stream"].desc = self.name
@@ -24,18 +27,18 @@ class streamChannel:
 
     def createBuffer(self):
         if not self.__channelOnAir:
-            print("Channel is off air - starting FFMPEG")
+            self.logger.debug("Channel is currently off air - starting FFMPEG process")
             self.__thread = threading.Thread(target=self.runChannel, args=())
             self.__thread.start()
-        buffer = channelBuffer()
-        self.buffer.append(buffer)
-        return buffer
+        clBuffer = buffer()
+        self.buffer.append(clBuffer)
+        return clBuffer
 
     def removeBuffer(self, buffer):
         buffer.destroy()
         self.buffer.remove(buffer)
         if len(self.buffer) == 0:
-            print("Nobody buffering this channel - killing FFMPEG")
+            self.logger.debug("Channel has 0 watchers, terminating FFMPEG")
             self.__subprocess.kill()
             self.__subprocess = None
             self.__channelOnAir = False

@@ -2,7 +2,7 @@ import os
 import yaml
 
 
-class epgCache:
+class cache:
     def __init__(self, showName):
         self.showName = showName
         if not os.path.isdir("cache"):
