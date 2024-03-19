@@ -36,9 +36,9 @@ class channel:
         time = datetime.now()
         for item in self.showPaths:
             self.epgData[item] = epgItem(item, self.scanDir)
-            self.epgData[item].startTime = time.strftime("%Y%m%d%H%M%S")
+            self.epgData[item].startTime = datetime.fromtimestamp(time.timestamp())
             time += timedelta(minutes=math.ceil(self.epgData[item].length))
-            self.epgData[item].endTime = time.strftime("%Y%m%d%H%M%S")
+            self.epgData[item].endTime = datetime.fromtimestamp(time.timestamp())
 
     def isScannedFileVideo(self, file):
         if file.startswith('.') or file.endswith(".part"):
@@ -67,15 +67,16 @@ class channel:
         self.shuffleShows()
 
     def getShow(self):
-        if len(self.showPaths) == 0:
+        print("Getting show + StartTime for channel %s" % self.name)
+        availShows = sorted([name for name, item in self.epgData.items() if item.endTime > datetime.now()], key=lambda epgItem: epgItem.startTime)
+        print("Found %s available Shows" % len(availShows))
+        if len(availShows) == 0:
             print("Available show list Empty")
-            self.showPaths = self.ranShows
             self.shuffleShows()
-            self.ranShows = []
-        show = self.showPaths.pop(0)
-        self.ranShows.append(show)
+            self.createEPGItems()
+        show = availShows.pop(0)
         print('Running show %s' % show)
-        return show
+        return show, datetime.now() - self.epgData[show].startTime
 
     def createBuffer(self):
         if not self.__channelOnAir:
@@ -99,7 +100,8 @@ class channel:
         print('Starting FFMPEG channel %s' % self.name)
         self.__channelOnAir = True
         while True:
-            cmd = ["ffmpeg", "-v", "error", "-re", "-i", self.getShow(), "-q:v", "15", "-acodec", "mp3", "-vf",
+            showData = self.getShow()
+            cmd = ["ffmpeg", "-v", "error", "-re", "-i", showData[0], "-q:v", "15", "-acodec", "mp3", "-vf",
                    "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,setsar=1",
                    "-f", "mpegts", "-"]
             try:

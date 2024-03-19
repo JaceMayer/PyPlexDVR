@@ -5,7 +5,7 @@
 <icon src=''/>
 </channel>
 {% for epgItem in channel.epgData.values() %}
-<programme channel='{{channel.id}}' start='{{epgItem.startTime}} +0000' stop='{{epgItem.endTime}} +0000'>
+<programme channel='{{channel.id}}' start='{{epgItem.getStartTime()}} +0000' stop='{{epgItem.getEndTime()}} +0000'>
 <title lang='en'>{{epgItem.title}}</title>
 <desc lang='en'>{{epgItem.desc}}
  </desc>

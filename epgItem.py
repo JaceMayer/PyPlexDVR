@@ -13,8 +13,20 @@ class epgItem:
         self.length = 0
         self.startTime = None
         self.endTime = None
-        if channelBaseDir != None:
+        if channelBaseDir is not None:
             self.getEPGData()
+
+    def getStartTime(self):
+        if isinstance(self.startTime, str):
+            return self.startTime
+        else:
+            return self.startTime.strftime("%Y%m%d%H%M%S")
+
+    def getEndTime(self):
+        if isinstance(self.endTime, str):
+            return self.endTime
+        else:
+            return self.endTime.strftime("%Y%m%d%H%M%S")
 
     def getEPGData(self):
         title = self.path.split(self.baseDir)[1].split('/')[0]
