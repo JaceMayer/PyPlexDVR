@@ -8,9 +8,9 @@ app = Flask(__name__)
 channelMap = {
 }
 
-for channelDef in dvrConfig["Channels"]:
-    channelDef["id"] = "ffmpeg-"+str(channelDef["id"])
-    channelMap[channelDef["id"]] = channel(channelDef)
+#for channelDef in dvrConfig["Channels"]:
+#    channelDef["id"] = "ffmpeg-"+str(channelDef["id"])
+#    channelMap[channelDef["id"]] = channel(channelDef)
 
 for channelDef in dvrConfig["Streams"]:
     channelDef["id"] = "stream-"+str(channelDef["id"])
