@@ -19,7 +19,7 @@ class streamChannel:
         self.epgData["stream"].title = self.name
         self.epgData["stream"].desc = self.name
         self.epgData["stream"].startTime = "20240101000001"
-        self.epgData["stream"].startTime = "20440101000001"
+        self.epgData["stream"].endTime = "20440101000001"
         self.buffer = []
         t = threading.Thread(target=self.runChannel, args=())
         t.start()

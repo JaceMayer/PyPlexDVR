@@ -6,7 +6,6 @@ from epgCache import epgCache
 
 class epgItem:
     def __init__(self, path, channelBaseDir):
-        self.t = tvdb_v4_official.TVDB(dvrConfig["EPG"]["TMDBAPIKey"])
         self.path = path
         self.baseDir = channelBaseDir
         self.title = ""
@@ -25,6 +24,7 @@ class epgItem:
         cache = epgCache(self.title)
         cache.loadCacheIfExists()
         if not cache.cacheLoaded or cache.getItemFromCache(self.path) is None:
+            self.t = tvdb_v4_official.TVDB(dvrConfig["EPG"]["TMDBAPIKey"])
             try:
                 show = self.t.search(self.title)
                 self.desc = show[0]['overview']

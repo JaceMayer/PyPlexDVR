@@ -8,12 +8,12 @@ class epgCache:
         if not os.path.isdir("cache"):
             print("Creating base cache dir")
             os.mkdir("cache")
-        self.cache = {}
+        self.cache = {"items":{}}
         self.cacheLoaded = False
 
     def getItemFromCache(self, itemName):
         if itemName in self.cache["items"]:
-            return self.cache["items"]
+            return self.cache["items"][itemName]
         return None
 
     def addItemToCache(self, itemName, length):
@@ -25,7 +25,8 @@ class epgCache:
             return
         with open("cache/%s.yaml" % self.showName, 'r') as stream:
             self.cache = yaml.safe_load(stream)
+        self.cacheLoaded = True
 
     def saveCacheToDisk(self):
-        with open("cache/%s.yaml", "w") as stream:
+        with open("cache/%s.yaml" % self.showName, "w") as stream:
             yaml.dump(self.cache, stream)
