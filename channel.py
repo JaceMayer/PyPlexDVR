@@ -104,7 +104,7 @@ class channel:
             totalSeconds = showData[1].total_seconds()
             hours, remainder = divmod(totalSeconds, 3600)
             minutes, seconds = divmod(remainder, 60)
-            time = '%s:%s:%s' % (hours, minutes, seconds)
+            time = '%s:%s:%s' % (int(hours), int(minutes), int(math.ceil(seconds)))
             print("Requesting FFMPEG Seek to %s" % time)
             cmd = ["ffmpeg", "-v", "error", "-ss", time, "-re", "-i", showData[0], "-q:v", "15", "-acodec", "mp3", "-vf",
                    "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,setsar=1",
