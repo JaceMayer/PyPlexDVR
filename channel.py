@@ -68,7 +68,7 @@ class channel:
 
     def getShow(self):
         print("Getting show + StartTime for channel %s" % self.name)
-        availShows = sorted([item for name, item in self.epgData.items() if item.endTime > datetime.now() + timedelta(seconds=2)], key=lambda epgItem: epgItem.startTime)
+        availShows = sorted([item for name, item in self.epgData.items() if item.endTime > datetime.now() + timedelta(minutes=2)], key=lambda epgItem: epgItem.startTime)
         print("Found %s available Shows" % len(availShows))
         if len(availShows) == 0:
             print("Available show list Empty")
