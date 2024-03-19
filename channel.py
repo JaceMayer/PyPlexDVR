@@ -68,15 +68,15 @@ class channel:
 
     def getShow(self):
         print("Getting show + StartTime for channel %s" % self.name)
-        availShows = sorted([name for name, item in self.epgData.items() if item.endTime > datetime.now()], key=lambda epgItem: epgItem.startTime)
+        availShows = sorted([item for name, item in self.epgData.items() if item.endTime > datetime.now()], key=lambda epgItem: epgItem.startTime)
         print("Found %s available Shows" % len(availShows))
         if len(availShows) == 0:
             print("Available show list Empty")
             self.shuffleShows()
             self.createEPGItems()
         show = availShows.pop(0)
-        print('Running show %s' % show)
-        return show, datetime.now() - self.epgData[show].startTime
+        print('Running show %s' % show.path)
+        return show.path, datetime.now() - self.epgData[show].startTime
 
     def createBuffer(self):
         if not self.__channelOnAir:
