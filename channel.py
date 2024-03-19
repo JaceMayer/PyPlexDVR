@@ -76,7 +76,7 @@ class channel:
             self.createEPGItems()
         show = availShows.pop(0)
         print('Running show %s' % show.path)
-        return show.path, datetime.now() - self.epgData[show].startTime
+        return show.path, datetime.now() - show.startTime
 
     def createBuffer(self):
         if not self.__channelOnAir:
