@@ -16,19 +16,21 @@ ENV PYTHONDONTWRITEBYTECODE=1
 # the application crashes without emitting any logs due to buffering.
 ENV PYTHONUNBUFFERED=1
 
-WORKDIR .
-
 # Create a non-privileged user that the app will run under.
 # See https://docs.docker.com/go/dockerfile-user-best-practices/
+# create directory for the app user
+RUN mkdir -p /home/appuser
+
 ARG UID=10001
 RUN adduser \
     --disabled-password \
     --gecos "" \
-    --home "/nonexistent" \
+    --home "/home/appuser" \
     --shell "/sbin/nologin" \
-    --no-create-home \
     --uid "${UID}" \
     appuser
+
+WORKDIR /home/appuser
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage a cache mount to /root/.cache/pip to speed up subsequent builds.
@@ -41,11 +43,14 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # Install FFMPEG
 RUN apt-get -y update && apt-get -y upgrade && apt-get install  -y ffmpeg
 
+# Chown all the files to the appuser
+RUN chown -R appuser:appuser /home/appuser
+
 # Switch to the non-privileged user to run the application.
 USER appuser
 
 # Copy the source code into the container.
-COPY . .
+COPY . /home/appuser
 
 # Expose the port that the application listens on.
 EXPOSE 5004
