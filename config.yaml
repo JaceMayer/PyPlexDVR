@@ -18,5 +18,5 @@ EPG:
   TMDBAPIKey: API Key
   generate: true
 Server:
-  bindAddr: 127.0.0.1
+  bindAddr: 0.0.0.0
   bindPort: '5004'
