@@ -44,8 +44,8 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 RUN apt-get -y update && apt-get -y upgrade && apt-get install  -y ffmpeg
 
 # Chown all the files to the appuser
+RUN mkdir /home/appuser/cache
 RUN chown -R appuser:appuser /home/appuser
-
 # Switch to the non-privileged user to run the application.
 USER appuser
 
@@ -56,4 +56,4 @@ COPY . /home/appuser
 EXPOSE 5004
 
 # Run the application.
-CMD python3.12 main.py
+CMD gunicorn -k gevent --config gunicorn_config.py main:app

@@ -12,7 +12,7 @@ class stream:
         self.logger = logging.getLogger("Stream-%s"%self.name)
         self.id = channelDef["id"]
         self.stream = channelDef["url"]
-        self.url = 'http://%s:%s/stream/%s' % (dvrConfig["Server"]['bindAddr'], dvrConfig["Server"]['bindPort'], self.id)
+        self.url = '%s/stream/%s' % (dvrConfig["Server"]['url'], self.id)
         self.epgData = {
             "stream": item("Stream", None)
         }
@@ -47,9 +47,7 @@ class stream:
         print('Starting Stream channel %s' % self.name)
         self.__channelOnAir = True
         while True:
-            cmd = ["ffmpeg", "-v", "error", "-re", "-i", self.stream, "-q:v", "2", "-acodec", "mp3", "-vf",
-                   "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,setsar=1",
-                   "-f", "mpegts", "-"]
+            cmd = ["ffmpeg", "-v", "error", "-reconnect_at_eof", "1", "-reconnect_streamed","1", "-reconnect_delay_max", str(dvrConfig["FFMPEG"]['streamReconnectDelay']), "-re", "-i", self.stream, "-q:v", str(dvrConfig["FFMPEG"]['videoQuality']), "-acodec", "mp3","-vcodec", "copy", "-f", "mpegts", "-"]
             try:
                 self.__subprocess = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, bufsize=0)
             except Exception as e:

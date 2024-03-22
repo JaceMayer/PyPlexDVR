@@ -1,3 +1,5 @@
+from gevent import monkey, sleep
+monkey.patch_all()
 import logging
 logging.basicConfig(filename="pyplexdvr.log", filemode="w", level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 from flask import Flask, Response, jsonify, render_template, stream_with_context
@@ -22,13 +24,13 @@ for channelDef in dvrConfig["Streams"]:
     channelMap[channelDef["id"]] = stream(channelDef)
 
 discoverData = {
-    'BaseURL': 'http://%s:%s' % (dvrConfig["Server"]['bindAddr'], str(dvrConfig["Server"]['bindPort'])),
+    'BaseURL': dvrConfig["Server"]['url'],
     'DeviceAuth': 'pytv',
     'DeviceID': 'pytv-1',
     'FirmwareName': 'bin_1.0.0',
     'FirmwareVersion': '1.0.0',
     'FriendlyName': dvrConfig['DVR']['friendlyName'],
-    'LineupURL': 'http://%s:%s/lineup.json' % (dvrConfig["Server"]['bindAddr'], str(dvrConfig["Server"]['bindPort'])),
+    'LineupURL': '%s/lineup.json' % (dvrConfig["Server"]['url']),
     'Manufacturer': "Python",
     'ModelNumber': '1.0.0',
     'TunerCount': dvrConfig['DVR']['tunerCount']
@@ -60,6 +62,7 @@ def stream(channel):
             while True:
                 if buffer.length() != 0:
                     yield buffer.pop(0)
+                sleep(0.001)
         except GeneratorExit:
             channelMap[channel].removeBuffer(buffer)
     return Response(stream_with_context(generate(channel)), mimetype='video/MP2T')
@@ -79,6 +82,3 @@ def lineup():
         lineup.append({"GuideName": cl.name, "GuideNumber": cl.id, "URL": cl.url})
     return jsonify(lineup)
 
-
-if __name__ == '__main__':
-    app.run(host=dvrConfig["Server"]['bindAddr'], port=dvrConfig["Server"]['bindPort'], debug=False)

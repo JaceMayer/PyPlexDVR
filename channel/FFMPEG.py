@@ -16,8 +16,8 @@ class FFMPEG:
         self.id = channelDef["id"]
         self.name = channelDef["name"]
         self.logger = logging.getLogger("FFMPEG-%s"%self.name)
-        self.url = 'http://%s:%s/stream/%s' % (
-        dvrConfig["Server"]['bindAddr'], dvrConfig["Server"]['bindPort'], self.id)
+        self.url = '%s/stream/%s' % (
+        dvrConfig["Server"]['url'], self.id)
         self.scanDir = channelDef["baseDir"]
         if "showDirs" in channelDef:
             self.scanPaths = channelDef["showDirs"]
@@ -76,9 +76,10 @@ class FFMPEG:
             self.logger.warning("Available show list Empty")
             self.shuffleShows()
             self.createEPGItems()
+            return self.getShow()
         show = availShows.pop(0)
         self.logger.debug('Running show %s' % show.path)
-        return show.path, datetime.now() - show.startTime
+        return show.path, show.startTime
 
     def createBuffer(self):
         if not self.__channelOnAir:
@@ -102,12 +103,16 @@ class FFMPEG:
         self.__channelOnAir = True
         while True:
             showData = self.getShow()
-            totalSeconds = showData[1].total_seconds()
-            hours, remainder = divmod(totalSeconds, 3600)
-            minutes, seconds = divmod(remainder, 60)
-            time = '%s:%s:%s' % (int(hours), int(minutes), int(math.ceil(seconds)))
-            self.logger.debug("Requesting FFMPEG Seek to %s" % time)
-            cmd = ["ffmpeg", "-v", "error", "-ss", time, "-re", "-i", showData[0], "-q:v", "2", "-acodec", "mp3", "-vf",
+            if showData[1] > datetime.now():
+                self.logger.warning("Show is starting before EPG Start Time")
+                time = "00:00:01"
+            else:
+                elapsed = (datetime.now() - showData[1]).total_seconds()
+                hours, remainder = divmod(elapsed, 3600)
+                minutes, seconds = divmod(remainder, 60)
+                time = '%s:%s:%s' % (int(hours), int(minutes), int(math.ceil(seconds)))
+                self.logger.debug("Requesting FFMPEG Seek to %s" % time)
+            cmd = ["ffmpeg", "-v", "error", "-async", "1", "-ss", time, "-re", "-i", showData[0], "-q:v", str(dvrConfig["FFMPEG"]['videoQuality']), "-acodec", "mp3", "-vf",
                    "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,setsar=1",
                    "-f", "mpegts", "-"]
             try:
