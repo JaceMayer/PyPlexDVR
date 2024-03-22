@@ -55,5 +55,8 @@ COPY . /home/appuser
 # Expose the port that the application listens on.
 EXPOSE 5004
 
+# Create EPG Cache Files
+CMD python3.12 createCache.py
+
 # Run the application.
 CMD gunicorn -k gevent --config gunicorn_config.py main:app
