@@ -43,6 +43,12 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # Install FFMPEG
 RUN apt-get -y update && apt-get -y upgrade && apt-get install  -y ffmpeg
 
+# Copy the shell script into the container
+COPY dockerStart.sh /usr/local/bin/dockerStart.sh
+
+# Make the shell script executable
+RUN chmod +x /usr/local/bin/dockerStart.sh
+
 # Chown all the files to the appuser
 RUN mkdir /home/appuser/cache
 RUN chown -R appuser:appuser /home/appuser
@@ -55,8 +61,5 @@ COPY . /home/appuser
 # Expose the port that the application listens on.
 EXPOSE 5004
 
-# Create EPG Cache Files
-CMD python3.12 createCache.py
-
 # Run the application.
-CMD gunicorn -k gevent --config gunicorn_config.py main:app
+CMD /usr/local/bin/dockerStart.sh
