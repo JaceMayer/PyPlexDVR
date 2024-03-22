@@ -9,19 +9,20 @@ from config import dvrConfig
 
 app = Flask(__name__)
 
-log = logging.getLogger('werkzeug')
-log.setLevel(logging.ERROR)
-
 channelMap = {
 }
 
-for channelDef in dvrConfig["Channels"]:
-    channelDef["id"] = "ffmpeg-"+str(channelDef["id"])
-    channelMap[channelDef["id"]] = FFMPEG(channelDef)
+# Defines and sets up FFMPEG channels
+if "Channels" in dvrConfig:
+    for channelDef in dvrConfig["Channels"]:
+        channelDef["id"] = "ffmpeg-"+str(channelDef["id"])
+        channelMap[channelDef["id"]] = FFMPEG(channelDef)
 
-for channelDef in dvrConfig["Streams"]:
-    channelDef["id"] = "stream-"+str(channelDef["id"])
-    channelMap[channelDef["id"]] = stream(channelDef)
+# Defines and sets up streaming channels
+if "Streams" in dvrConfig:
+    for channelDef in dvrConfig["Streams"]:
+        channelDef["id"] = "stream-"+str(channelDef["id"])
+        channelMap[channelDef["id"]] = stream(channelDef)
 
 discoverData = {
     'BaseURL': dvrConfig["Server"]['url'],

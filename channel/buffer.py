@@ -1,35 +1,35 @@
 import time
 
+# The client channel buffer
 class buffer:
     def __init__(self):
-        self.buffer = []
-        self.startTime = time.time()
-        self.sentInitialBurst = False
+        self.__buffer = []
+        self.__startTime = time.time()
+        self.__sentInitialBurst = False
 
+    # Used by the channel to append data to the clients buffer
     def append(self, data):
-        self.buffer.append(data)
+        self.__buffer.append(data)
 
     def pop(self, index):
-        if time.time() < self.startTime + 3 and not self.sentInitialBurst:
+        if time.time() < self.__startTime + 3 and not self.__sentInitialBurst:
             return b'' 
-        elif time.time() > self.startTime + 3 and not self.sentInitialBurst:
-            self.sentInitialBurst = True
+        elif time.time() > self.__startTime + 3 and not self.__sentInitialBurst:
+            self.__sentInitialBurst = True
             val = b''
-            for i in range(len(self.buffer)):
-                val += self.buffer.pop(index)
+            for i in range(len(self.__buffer)):
+                val += self.__buffer.pop(index)
             return val
-        if self.buffer is not None and len(self.buffer) != 0:
-            return self.buffer.pop(index) 
-        elif self.buffer is not None and len(self.buffer) == 0:
-            print("Client has exhausted buffer.")
+        if self.__buffer is not None and len(self.__buffer) != 0:
+            return self.__buffer.pop(index)
             
         return b''
     
     def destroy(self):
-        self.buffer = None
+        self.__buffer = None
 
     def length(self):
-        if self.buffer is not None:
-            return len(self.buffer)
+        if self.__buffer is not None:
+            return len(self.__buffer)
         else:
             return 0

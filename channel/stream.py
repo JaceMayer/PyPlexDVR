@@ -44,14 +44,16 @@ class stream:
             self.__channelOnAir = False
 
     def runChannel(self):
-        print('Starting Stream channel %s' % self.name)
         self.__channelOnAir = True
         while True:
-            cmd = ["ffmpeg", "-v", "error", "-reconnect_at_eof", "1", "-reconnect_streamed","1", "-reconnect_delay_max", str(dvrConfig["FFMPEG"]['streamReconnectDelay']), "-re", "-i", self.stream, "-q:v", str(dvrConfig["FFMPEG"]['videoQuality']), "-acodec", "mp3","-vcodec", "copy", "-f", "mpegts", "-"]
+            cmd = ["ffmpeg", "-v", "error", "-reconnect_at_eof", "1", "-reconnect_streamed","1",
+                   "-reconnect_delay_max", str(dvrConfig["FFMPEG"]['streamReconnectDelay']), "-re", "-i", self.stream,
+                   "-q:v", str(dvrConfig["FFMPEG"]['videoQuality']), "-acodec", "mp3","-vcodec", "copy", "-f", "mpegts",
+                   "-"]
             try:
                 self.__subprocess = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, bufsize=0)
             except Exception as e:
-                print("Error during FFMPEG execution:", e)
+                self.logger.error("Error during FFMPEG execution:", e)
                 return
             line = self.__subprocess.stdout.read(1024)
             while True:

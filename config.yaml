@@ -1,3 +1,8 @@
+# FFMPEG disk based channels
+# id is an integer used to distinguish channels
+# baseDir defines the scan directory
+# name defines the name that shows in the EPG
+# showDirs [Optional] shows to be re-cursed into as baseDir/showdir/Season/file
 Channels:
 - baseDir: /path/to/shows/
   id: 0
@@ -7,16 +12,26 @@ Channels:
 - baseDir: /path/to/movies
   id: 1
   name: Movie Channel
+# HTTP based stream channels
+# name defines the name that shows in the EPG
+# id is an integer used to distinguish channels
+# url sets the remote stream to connect to
 Streams:
   - name: BBC One North West
     id: 2
     url: https://vs-cmaf-pushb-uk-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_one_north_west/pc_hd_abr_v2.mpd
 DVR:
-  friendlyName: PyPlexDVR
-  tunerCount: 100
+  friendlyName: PyPlexDVR # The name of the DVR in plex
+  tunerCount: 100 # The amount of channels that can be concurrently watched in plex
 EPG:
-  TMDBAPIKey: API Key
-  generate: true
+  TMDBAPIKey: API Key # API Key for TheMovieDatabase, used to scrape EPG data
+  generate: true # true/false to set EPG Generation
+FFMPEG:
+  videoQuality: 6 # FFMPEG video quality (32 being worst, 2 being best)
+  streamReconnectDelay: 5 # Used for streams when it becomes disconnected, for delay in reconnect attempts
 Server:
-  bindAddr: 0.0.0.0
-  bindPort: '5004'
+  bindAddr: 0.0.0.0 # gunicorn bind address
+  bindPort: '5004' # gunicorn bind port
+  url: http://127.0.0.1:5004 # URL used for lineup and epg
+  gunicornThreads: 1 # Threads gunicorn uses to handle requests
+  gunicornWorkers: 1 # Number of workers gunicorn is to spawn

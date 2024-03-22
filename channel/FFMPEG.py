@@ -16,15 +16,13 @@ class FFMPEG:
         self.id = channelDef["id"]
         self.name = channelDef["name"]
         self.logger = logging.getLogger("FFMPEG-%s"%self.name)
-        self.url = '%s/stream/%s' % (
-        dvrConfig["Server"]['url'], self.id)
+        self.url = '%s/stream/%s' % (dvrConfig["Server"]['url'], self.id)
         self.scanDir = channelDef["baseDir"]
         if "showDirs" in channelDef:
             self.scanPaths = channelDef["showDirs"]
         else:
             self.scanPaths = [""]
         self.showPaths = []
-        self.ranShows = []
         self.epgData = {}
         self.scanShows()
         self.buffer = []
@@ -104,7 +102,9 @@ class FFMPEG:
         while True:
             showData = self.getShow()
             if showData[1] > datetime.now():
-                self.logger.warning("Show is starting before EPG Start Time")
+                aheadBy = showData[1] - datetime.now()
+                self.logger.warning("Show is starting before EPG Start Time - Running ahead by %s seconds" %
+                                    str(aheadBy.total_seconds()))
                 time = "00:00:01"
             else:
                 elapsed = (datetime.now() - showData[1]).total_seconds()
@@ -112,13 +112,14 @@ class FFMPEG:
                 minutes, seconds = divmod(remainder, 60)
                 time = '%s:%s:%s' % (int(hours), int(minutes), int(math.ceil(seconds)))
                 self.logger.debug("Requesting FFMPEG Seek to %s" % time)
-            cmd = ["ffmpeg", "-v", "error", "-async", "1", "-ss", time, "-re", "-i", showData[0], "-q:v", str(dvrConfig["FFMPEG"]['videoQuality']), "-acodec", "mp3", "-vf",
+            cmd = ["ffmpeg", "-v", "error", "-async", "1", "-ss", time, "-re", "-i", showData[0], "-q:v",
+                   str(dvrConfig["FFMPEG"]['videoQuality']), "-acodec", "mp3", "-vf",
                    "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,setsar=1",
                    "-f", "mpegts", "-"]
             try:
                 self.__subprocess = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, bufsize=0)
             except Exception as e:
-                print("Error during FFMPEG execution:", e)
+                self.logger.error("Error during FFMPEG execution:", e)
                 return
             line = self.__subprocess.stdout.read(1024)
             while True:
