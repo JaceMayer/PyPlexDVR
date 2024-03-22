@@ -1,4 +1,5 @@
 import time
+from config import dvrConfig
 
 # The client channel buffer
 class buffer:
@@ -12,15 +13,20 @@ class buffer:
         self.__buffer.append(data)
 
     def pop(self, index):
-        if time.time() < self.__startTime + 3 and not self.__sentInitialBurst:
+        if time.time() < self.__startTime + dvrConfig["Client"]['initalBufferTime'] and not self.__sentInitialBurst:
             return b'' 
-        elif time.time() > self.__startTime + 3 and not self.__sentInitialBurst:
+        elif time.time() > self.__startTime + dvrConfig["Client"]['initalBufferTime'] and not self.__sentInitialBurst:
             self.__sentInitialBurst = True
             val = b''
             for i in range(len(self.__buffer)):
                 val += self.__buffer.pop(index)
             return val
         if self.__buffer is not None and len(self.__buffer) != 0:
+            if len(self.__buffer) > dvrConfig["Client"]['maxBufferSize']:
+                val = b''
+                for i in range(len(self.__buffer)):
+                    val += self.__buffer.pop(index)
+                return val
             return self.__buffer.pop(index)
             
         return b''

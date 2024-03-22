@@ -29,6 +29,9 @@ EPG:
 FFMPEG:
   videoQuality: 6 # FFMPEG video quality (32 being worst, 2 being best)
   streamReconnectDelay: 5 # Used for streams when it becomes disconnected, for delay in reconnect attempts
+Client:
+    initalBufferTime: 5 # Initial buffer in seconds 
+    maxBufferSize: 50 # Flush the buffer when it reaches 50*1024 bytes 
 Server:
   bindAddr: 0.0.0.0 # gunicorn bind address
   bindPort: '5004' # gunicorn bind port
