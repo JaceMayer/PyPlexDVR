@@ -4,6 +4,8 @@ import threading
 from epg.item import item
 from channel.buffer import buffer
 import logging
+import select
+import time
 
 
 class stream:
@@ -43,8 +45,19 @@ class stream:
             self.__subprocess = None
             self.__channelOnAir = False
 
+    def getBlankVideo(self):
+        cmd = ["ffmpeg", "-v", "error", "-i", "assets/channelUnavailable.mp4", "-f", "mpegts", "-"]
+        __subprocess = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, bufsize=0)
+        buffer = b''
+        line = __subprocess.stdout.read(1024)
+        while line != b'':
+            buffer += line
+            line = self.__subprocess.stdout.read(1024)
+        return buffer
+
     def runChannel(self):
         self.__channelOnAir = True
+        lastFrameT = time.time()
         while True:
             cmd = ["ffmpeg", "-v", "error", "-reconnect_at_eof", "1", "-reconnect_streamed","1",
                    "-reconnect_delay_max", str(dvrConfig["FFMPEG"]['streamReconnectDelay']), "-re", "-i", self.stream,
@@ -52,10 +65,14 @@ class stream:
                    "-"]
             try:
                 self.__subprocess = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, bufsize=0)
+                subprocessPoll = select.poll()
+                subprocessPoll.register(self.__subprocess.stdout, select.POLLIN)
             except Exception as e:
                 self.logger.error("Error during FFMPEG execution:", e)
-                return
-            line = self.__subprocess.stdout.read(1024)
+                frame = self.getBlankVideo()
+                for buffer in self.buffer: buffer.append(frame)
+                continue
+            line = b''
             while True:
                 if not self.__channelOnAir:
                     self.__thread = None
@@ -63,6 +80,14 @@ class stream:
                 if line == b'':
                     self.__subprocess.poll()
                     if isinstance(self.__subprocess.returncode, int):
+                        frame = self.getBlankVideo()
+                        for buffer in self.buffer: buffer.append(frame)
                         break
-                for buffer in self.buffer: buffer.append(line)
-                line = self.__subprocess.stdout.read(1024)
+                if subprocessPoll.poll(0):
+                    lastFrameT = time.time()
+                    line = self.__subprocess.stdout.read(1024)
+                    for buffer in self.buffer: buffer.append(line)
+                elif time.time() - lastFrameT > 2:
+                    self.logger.warning("No FFMPEG data received in 2 seconds")
+                    frame = self.getBlankVideo()
+                    for buffer in self.buffer: buffer.append(frame)
