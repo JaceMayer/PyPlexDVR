@@ -87,7 +87,8 @@ class stream:
                     lastFrameT = time.time()
                     line = self.__subprocess.stdout.read(1024)
                     for buffer in self.buffer: buffer.append(line)
-                elif time.time() - lastFrameT > 2:
-                    self.logger.warning("No FFMPEG data received in 2 seconds")
+                elif time.time() - lastFrameT > 1:
+                    lastFrameT = time.time()
+                    self.logger.warning("No FFMPEG data received in 1 seconds")
                     frame = self.getBlankVideo()
                     for buffer in self.buffer: buffer.append(frame)
