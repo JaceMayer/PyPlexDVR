@@ -52,7 +52,7 @@ class stream:
         line = __subprocess.stdout.read(1024)
         while line != b'':
             buffer += line
-            line = self.__subprocess.stdout.read(1024)
+            line = __subprocess.stdout.read(1024)
         return buffer
 
     def runChannel(self):
