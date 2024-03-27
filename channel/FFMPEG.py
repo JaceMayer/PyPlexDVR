@@ -31,6 +31,14 @@ class FFMPEG:
         self.__thread = None
         if dvrConfig["EPG"]["generate"]:
             self.createEPGItems()
+        else:
+            self.epgData = {
+                self.name: item(self.name, None)
+            }
+            self.epgData[self.name].title = self.name
+            self.epgData[self.name].desc = self.name
+            self.epgData[self.name].startTime = "20240101000001"
+            self.epgData[self.name].endTime = "20440101000001"
 
     def createEPGItems(self):
         time = datetime.now()

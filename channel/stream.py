@@ -60,7 +60,7 @@ class stream:
         lastFrameT = time.time()
         while True:
             cmd = ["ffmpeg", "-v", "error", "-reconnect_at_eof", "1", "-reconnect_streamed","1",
-                   "-reconnect_delay_max", str(dvrConfig["FFMPEG"]['streamReconnectDelay']), "-re", "-i", self.stream,
+                   "-reconnect_delay_max", str(dvrConfig["FFMPEG"]['streamReconnectDelay']), "-async", "1", "-re", "-i", self.stream,
                    "-q:v", str(dvrConfig["FFMPEG"]['videoQuality']), "-acodec", "mp3","-vcodec", "copy", "-f", "mpegts",
                    "-"]
             try:
@@ -69,8 +69,10 @@ class stream:
                 subprocessPoll.register(self.__subprocess.stdout, select.POLLIN)
             except Exception as e:
                 self.logger.error("Error during FFMPEG execution:", e)
-                frame = self.getBlankVideo()
-                for buffer in self.buffer: buffer.append(frame)
+                if time.time() - lastFrameT > 1:
+                    lastFrameT = time.time()
+                    frame = self.getBlankVideo()
+                    for buffer in self.buffer: buffer.append(frame)
                 continue
             line = b''
             while True:
