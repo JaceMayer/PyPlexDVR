@@ -35,7 +35,7 @@ class item:
         self.title = title.encode('utf-8').strip().decode()
         EPGcache = cache(self.title)
         EPGcache.loadCacheIfExists()
-        if not EPGcache.cacheLoaded or EPGcache.getItemFromCache(self.path) is None:
+        if not EPGcache.cacheLoaded:
             self.t = tvdb_v4_official.TVDB(dvrConfig["EPG"]["TMDBAPIKey"])
             try:
                 show = self.t.search(self.title)
@@ -52,6 +52,9 @@ class item:
             if not EPGcache.cacheLoaded:
                 EPGcache.cache["title"] = self.title
                 EPGcache.cache["desc"] = self.desc
+            EPGcache.addItemToCache(self.path, self.length)
+            EPGcache.saveCacheToDisk()
+        elif EPGcache.getItemFromCache(self.path) is None:
             EPGcache.addItemToCache(self.path, self.length)
             EPGcache.saveCacheToDisk()
         else:
