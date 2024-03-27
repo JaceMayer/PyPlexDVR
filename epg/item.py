@@ -55,6 +55,7 @@ class item:
             EPGcache.addItemToCache(self.path, self.length)
             EPGcache.saveCacheToDisk()
         elif EPGcache.getItemFromCache(self.path) is None:
+            self.length = self.getLength()
             EPGcache.addItemToCache(self.path, self.length)
             EPGcache.saveCacheToDisk()
         else:
