@@ -31,6 +31,7 @@ class FFMPEG:
         else:
             self.resolution = [1280, 720]  # Default output resolution to 720p
         self.showPaths = []
+        self.watchedShows = []
         self.epgData = {}
         self.scanShows()
         self.buffer = []
@@ -86,17 +87,29 @@ class FFMPEG:
         self.shuffleShows()
 
     def getShow(self):
-        self.logger.debug("Getting show + StartTime for channel %s" % self.name)
-        availShows = sorted([item for name, item in self.epgData.items() if item.endTime > datetime.now() + timedelta(minutes=2)], key=lambda epgItem: epgItem.startTime)
-        self.logger.debug("Found %s available Shows" % len(availShows))
-        if len(availShows) == 0:
-            self.logger.warning("Available show list Empty")
-            self.shuffleShows()
-            self.createEPGItems()
-            return self.getShow()
-        show = availShows.pop(0)
-        self.logger.debug('Running show %s' % show.path)
-        return show.path, show.startTime
+        if dvrConfig["EPG"]["generate"]:
+            self.logger.debug("Getting show + StartTime for channel %s" % self.name)
+            availShows = sorted([item for name, item in self.epgData.items() if item.endTime > datetime.now() + timedelta(minutes=2)], key=lambda epgItem: epgItem.startTime)
+            self.logger.debug("Found %s available Shows" % len(availShows))
+            if len(availShows) == 0:
+                self.logger.warning("Available show list Empty")
+                self.shuffleShows()
+                self.createEPGItems()
+                return self.getShow()
+            show = availShows.pop(0)
+            self.logger.debug('Running show %s' % show.path)
+            return show.path, show.startTime
+        else:
+            if len(self.showPaths) != 0:
+                showPath = self.showPaths.pop(0)
+                self.watchedShows.append(showPath)
+                return showPath, datetime.now()
+            else:
+                self.logger.warning("Available show list Empty")
+                self.showPaths = self.watchedShows
+                self.watchedShows = []
+                self.shuffleShows()
+                return self.getShow()
 
     def createBuffer(self):
         if not self.__channelOnAir:
