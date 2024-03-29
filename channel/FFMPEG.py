@@ -22,6 +22,14 @@ class FFMPEG:
             self.scanPaths = channelDef["showDirs"]
         else:
             self.scanPaths = [""]
+        if "videoQuality" in channelDef:
+            self.videoQuality = channelDef["videoQuality"]
+        else:
+            self.videoQuality = dvrConfig["FFMPEG"]['videoQuality']
+        if "resolution" in channelDef:
+            self.resolution = channelDef["resolution"]
+        else:
+            self.resolution = [1280, 720]  # Default output resolution to 720p
         self.showPaths = []
         self.epgData = {}
         self.scanShows()
@@ -121,8 +129,9 @@ class FFMPEG:
                 time = '%s:%s:%s' % (int(hours), int(minutes), int(math.ceil(seconds)))
                 self.logger.debug("Requesting FFMPEG Seek to %s" % time)
             cmd = ["ffmpeg", "-v", "error", "-async", "1", "-ss", time, "-re", "-i", showData[0], "-q:v",
-                   str(dvrConfig["FFMPEG"]['videoQuality']), "-acodec", "mp3", "-vf",
-                   "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,setsar=1",
+                   str(self.videoQuality), "-acodec", "mp3", "-vf",
+                   "scale=%s:%s:force_original_aspect_ratio=decrease,pad=%s:%s:(ow-iw)/2:(oh-ih)/2,setsar=1"
+                   % (self.resolution[0], self.resolution[1], self.resolution[0], self.resolution[1]),
                    "-f", "mpegts", "-"]
             try:
                 self.__subprocess = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, bufsize=0)
