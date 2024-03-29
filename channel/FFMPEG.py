@@ -73,8 +73,11 @@ class FFMPEG:
             path = self.scanDir + path
             for file in os.listdir(path):
                 if file.startswith('.') or file.endswith(".part"): continue
-                if os.path.isfile('%s/%s' % (path, file)) and self.isScannedFileVideo(file):
-                    self.showPaths.append('%s/%s' % (path, file))
+                if os.path.isfile('%s/%s' % (path, file)):
+                    if self.isScannedFileVideo(file):
+                        self.showPaths.append('%s/%s' % (path, file))
+                    else:
+                        self.logger.warning("Unknown File Extension encountered %s/%s" % (path, file))
                 else:
                     for seasonFile in os.listdir('%s/%s' % (path, file)):
                         if self.isScannedFileVideo(seasonFile):
