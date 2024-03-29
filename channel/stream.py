@@ -94,3 +94,4 @@ class stream:
                     self.logger.warning("No FFMPEG data received in 1 seconds")
                     frame = self.getBlankVideo()
                     for buffer in self.buffer: buffer.append(frame)
+                time.sleep(0.001)
