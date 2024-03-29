@@ -45,8 +45,8 @@ class FFMPEG:
             }
             self.epgData[self.name].title = self.name
             self.epgData[self.name].desc = self.name
-            self.epgData[self.name].startTime = "20240101000001"
-            self.epgData[self.name].endTime = "20440101000001"
+            self.epgData[self.name].startTime = datetime(2024, 1, 1, 0, 1, 59, 342380)
+            self.epgData[self.name].endTime = datetime(2044, 1, 1, 0, 1, 59, 342380)
 
     def createEPGItems(self):
         time = datetime.now()
