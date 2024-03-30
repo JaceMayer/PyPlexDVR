@@ -29,5 +29,6 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
+          platforms: linux/amd64,linux/arm64/v8
           push: true
           tags: ghcr.io/${{ steps.vars.outputs.repo }}:${{ steps.vars.outputs.tag }}
