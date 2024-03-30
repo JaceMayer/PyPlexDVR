@@ -1,7 +1,7 @@
 from gevent import monkey, sleep
 monkey.patch_all()
 import logging
-logging.basicConfig(filename="pyplexdvr.log", filemode="w", level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 from flask import Flask, Response, jsonify, render_template, stream_with_context
 from channel.FFMPEG import FFMPEG
 from channel.stream import stream
