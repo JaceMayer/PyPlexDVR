@@ -15,7 +15,10 @@ class item:
         self.startTime = None
         self.endTime = None
         if channelBaseDir is not None:
-            self.getEPGData()
+            if dvrConfig["EPG"]["generate"]:
+                self.getEPGData_TMDB()
+            else:
+                self.getEPGData_FS()
 
     def getStartTime(self):
         if isinstance(self.startTime, str):
@@ -29,7 +32,27 @@ class item:
         else:
             return self.endTime.strftime("%Y%m%d%H%M%S")
 
-    def getEPGData(self):
+    def getEPGData_FS(self):
+        title = self.path.split(self.baseDir)[1].split('/')[0]
+        if title == "":
+            title = self.path.split(self.baseDir)[1][1:-3]
+        self.title = title.encode('utf-8').strip().decode()
+        EPGcache = getCache(self.title)
+        if not EPGcache.hasEPGDesc():
+            self.desc = self.title
+            EPGcache.cache["title"] = self.title
+            EPGcache.cache["desc"] = self.desc
+            self.length = self.getLength()
+            EPGcache.addItemToCache(self.path, self.length)
+        elif EPGcache.getItemFromCache(self.path) is None:
+            self.length = self.getLength()
+            EPGcache.addItemToCache(self.path, self.length)
+        else:
+            self.length = EPGcache.getItemFromCache(self.path)
+            self.desc = EPGcache.cache["desc"]
+            self.title = EPGcache.cache["title"]
+
+    def getEPGData_TMDB(self):
         title = self.path.split(self.baseDir)[1].split('/')[0]
         if title == "":
             title = self.path.split(self.baseDir)[1][1:-3]

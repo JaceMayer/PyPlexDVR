@@ -23,16 +23,7 @@ class FFMPEG(channel):
         self.watchedShows = []
         self.epgData = {}
         self.scanShows()
-        if dvrConfig["EPG"]["generate"]:
-            self.createEPGItems()
-        else:
-            self.epgData = {
-                self.name: item(self.name, None)
-            }
-            self.epgData[self.name].title = self.name
-            self.epgData[self.name].desc = self.name
-            self.epgData[self.name].startTime = datetime(2024, 1, 1, 0, 1, 59, 342380)
-            self.epgData[self.name].endTime = datetime(2044, 1, 1, 0, 1, 59, 342380)
+        self.createEPGItems()
 
     def createEPGItems(self):
         time = datetime.now()

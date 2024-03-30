@@ -1,10 +1,6 @@
 from channel.FFMPEG import FFMPEG
 from config import dvrConfig
 
-if not dvrConfig["EPG"]["generate"]:
-    import sys
-
-    sys.exit()
 
 print("Creating EPG Cache")
 
