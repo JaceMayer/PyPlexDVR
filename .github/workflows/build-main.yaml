@@ -30,5 +30,6 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           platforms: linux/amd64,linux/arm64/v8
+          provenance: false
           push: true
           tags: ghcr.io/${{ steps.vars.outputs.repo }}:${{ steps.vars.outputs.tag }}
