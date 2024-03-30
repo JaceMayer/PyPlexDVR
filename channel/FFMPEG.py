@@ -6,30 +6,23 @@ import subprocess
 import threading
 from datetime import datetime, timedelta
 
+from channel.channel import channel
 from channel.buffer import buffer
 from config import dvrConfig
 from epg.item import item
 
 
-class FFMPEG:
+class FFMPEG(channel):
 
     def __init__(self, channelDef):
-        self.id = channelDef["id"]
-        self.name = channelDef.get("name", "%s" % self.id)
-        self.logger = logging.getLogger("FFMPEG-%s" % self.name)
-        self.url = '%s/stream/%s' % (dvrConfig["Server"]['url'], self.id)
+        super().__init__(channelDef)
         self.scanDir = channelDef["baseDir"]
         self.scanPaths = channelDef.get("showDirs", [""])
-        self.videoQuality = channelDef.get("videoQuality", dvrConfig["FFMPEG"]['videoQuality'])
-        self.resolution = channelDef.get("resolution", [1280, 720])
+
         self.showPaths = []
         self.watchedShows = []
         self.epgData = {}
         self.scanShows()
-        self.buffer = []
-        self.__subprocess = None
-        self.__channelOnAir = False
-        self.__thread = None
         if dvrConfig["EPG"]["generate"]:
             self.createEPGItems()
         else:
@@ -106,29 +99,11 @@ class FFMPEG:
                 self.shuffleShows()
                 return self.getShow()
 
-    def createBuffer(self):
-        if not self.__channelOnAir:
-            self.logger.debug("Channel is currently off air - starting FFMPEG process")
-            self.__thread = threading.Thread(target=self.runChannel, args=())
-            self.__thread.start()
-        clBuffer = buffer()
-        self.buffer.append(clBuffer)
-        return clBuffer
-
-    def removeBuffer(self, buffer):
-        buffer.destroy()
-        self.buffer.remove(buffer)
-        if len(self.buffer) == 0:
-            self.logger.debug("Channel has 0 watchers, terminating FFMPEG")
-            self.__subprocess.kill()
-            self.__subprocess = None
-            self.__channelOnAir = False
-
     def runChannel(self):
-        if self.__channelOnAir:
+        if self._channelOnAir:
             self.logger.warning("Received duplicate request to start the channel")
             return
-        self.__channelOnAir = True
+        self._channelOnAir = True
         while True:
             showData = self.getShow()
             if showData[1] > datetime.now():
@@ -148,18 +123,18 @@ class FFMPEG:
                    % (self.resolution[0], self.resolution[1], self.resolution[0], self.resolution[1]),
                    "-f", "mpegts", "-"]
             try:
-                self.__subprocess = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, bufsize=0)
+                self._subprocess = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, bufsize=0)
             except Exception as e:
                 self.logger.error("Error during FFMPEG execution:", e)
                 return
-            line = self.__subprocess.stdout.read(1024)
+            line = self._subprocess.stdout.read(1024)
             while True:
-                if not self.__channelOnAir:
-                    self.__thread = None
+                if not self._channelOnAir:
+                    self._thread = None
                     return
                 if line == b'':
-                    self.__subprocess.poll()
-                    if isinstance(self.__subprocess.returncode, int):
+                    self._subprocess.poll()
+                    if isinstance(self._subprocess.returncode, int):
                         break
                 for buffer in self.buffer: buffer.append(line)
-                line = self.__subprocess.stdout.read(1024)
+                line = self._subprocess.stdout.read(1024)
