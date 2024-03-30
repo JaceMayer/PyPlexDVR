@@ -7,11 +7,14 @@ print("Creating EPG Cache")
 channelMap = {
 }
 
+channelID = 0
+
 # Defines and sets up FFMPEG channels
 if "Channels" in dvrConfig:
     for channelDef in dvrConfig["Channels"]:
-        channelDef["id"] = "ffmpeg-" + str(channelDef["id"])
+        channelDef["id"] = "ffmpeg-" + str(channelID)
         channelMap[channelDef["id"]] = FFMPEG(channelDef)
+        channelID += 1
 
 
 from epg.cache import cacheMap
