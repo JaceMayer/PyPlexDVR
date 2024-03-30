@@ -1,6 +1,8 @@
 from gevent import monkey, sleep
+
 monkey.patch_all()
 import logging
+
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 from flask import Flask, Response, jsonify, render_template, stream_with_context
 from channel.FFMPEG import FFMPEG
@@ -17,7 +19,7 @@ channelID = 0
 # Defines and sets up FFMPEG channels
 if "Channels" in dvrConfig:
     for channelDef in dvrConfig["Channels"]:
-        channelDef["id"] = "ffmpeg-"+str(channelID)
+        channelDef["id"] = "ffmpeg-" + str(channelID)
         channelMap[channelDef["id"]] = FFMPEG(channelDef)
         channelID += 1
 
@@ -25,7 +27,7 @@ channelID = 0
 # Defines and sets up streaming channels
 if "Streams" in dvrConfig:
     for channelDef in dvrConfig["Streams"]:
-        channelDef["id"] = "stream-"+str(channelID)
+        channelDef["id"] = "stream-" + str(channelID)
         channelMap[channelDef["id"]] = stream(channelDef)
         channelID += 1
 
@@ -52,12 +54,12 @@ def discover():
 @app.route('/device.xml')
 @app.route('/capability')
 def device():
-    return render_template('device.xml',data=discoverData),{'Content-Type': 'application/xml'}
+    return render_template('device.xml', data=discoverData), {'Content-Type': 'application/xml'}
 
 
 @app.route('/epg.xml')
 def epg():
-    return render_template('xmltv.xml', channels=list(channelMap.values())),{'Content-Type': 'application/xml'}
+    return render_template('xmltv.xml', channels=list(channelMap.values())), {'Content-Type': 'application/xml'}
 
 
 @app.route('/stream/<channel>')
@@ -71,13 +73,13 @@ def stream(channel):
                 sleep(0.001)
         except GeneratorExit:
             channelMap[channel].removeBuffer(buffer)
+
     return Response(stream_with_context(generate(channel)), mimetype='video/MP2T')
 
 
 @app.route('/lineup_status.json')
 def status():
-    status = {'ScanInProgress': 0, 'ScanPossible': 0, 'Source': 'Cable', 'SourceList':['Cable']}
-    return jsonify(status)
+    return jsonify({'ScanInProgress': 0, 'ScanPossible': 0, 'Source': 'Cable', 'SourceList': ['Cable']})
 
 
 @app.route('/lineup.json')
@@ -87,4 +89,3 @@ def lineup():
         cl = channelMap[channel]
         lineup.append({"GuideName": cl.name, "GuideNumber": cl.id, "URL": cl.url})
     return jsonify(lineup)
-

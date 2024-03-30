@@ -1,19 +1,19 @@
 <tv generator-info-name='Jace' source-info-name='Jaces XML TV'>
-{% for channel in channels %}
-<channel id='{{channel.id}}'>
-<display-name>{{channel.name}}</display-name>
-<icon src=''/>
-</channel>
-{% for epgItem in channel.epgData.values() %}
-<programme channel='{{channel.id}}' start='{{epgItem.getStartTime()}} +0000' stop='{{epgItem.getEndTime()}} +0000'>
-<title lang='en'>{{epgItem.title}}</title>
-<desc lang='en'>{{epgItem.desc}}
- </desc>
-<icon height='' src='' width=''/>
-<video/>
-<date/>
-<new/>
-</programme>
-{% endfor %}
-{% endfor %}
+    {% for channel in channels %}
+    <channel id='{{channel.id}}'>
+        <display-name>{{channel.name}}</display-name>
+        <icon src=''/>
+    </channel>
+    {% for epgItem in channel.epgData.values() %}
+    <programme channel='{{channel.id}}' start='{{epgItem.getStartTime()}} +0000' stop='{{epgItem.getEndTime()}} +0000'>
+        <title lang='en'>{{epgItem.title}}</title>
+        <desc lang='en'>{{epgItem.desc}}
+        </desc>
+        <icon height='' src='' width=''/>
+        <video/>
+        <date/>
+        <new/>
+    </programme>
+    {% endfor %}
+    {% endfor %}
 </tv>

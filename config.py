@@ -1,5 +1,6 @@
 import yaml
 
+
 # Loads and provides dictionary access to the config
 class config:
     def __init__(self):

@@ -1,5 +1,6 @@
-import tvdb_v4_official
 import moviepy.editor as mp
+import tvdb_v4_official
+
 from config import dvrConfig
 from .cache import cache
 

@@ -1,17 +1,18 @@
-from config import dvrConfig
-import subprocess
-import threading
-from epg.item import item
-from channel.buffer import buffer
 import logging
 import select
+import subprocess
+import threading
 import time
+
+from channel.buffer import buffer
+from config import dvrConfig
+from epg.item import item
 
 
 class stream:
     def __init__(self, channelDef):
         self.name = channelDef["name"]
-        self.logger = logging.getLogger("Stream-%s"%self.name)
+        self.logger = logging.getLogger("Stream-%s" % self.name)
         self.id = channelDef["id"]
         self.stream = channelDef["url"]
         self.url = '%s/stream/%s' % (dvrConfig["Server"]['url'], self.id)
@@ -62,9 +63,11 @@ class stream:
         self.__channelOnAir = True
         lastFrameT = time.time()
         while True:
-            cmd = ["ffmpeg", "-v", "error", "-reconnect_at_eof", "1", "-reconnect_streamed","1",
-                   "-reconnect_delay_max", str(dvrConfig["FFMPEG"]['streamReconnectDelay']), "-async", "1", "-re", "-i", self.stream,
-                   "-q:v", str(dvrConfig["FFMPEG"]['videoQuality']), "-acodec", "mp3","-vcodec", "copy", "-f", "mpegts",
+            cmd = ["ffmpeg", "-v", "error", "-reconnect_at_eof", "1", "-reconnect_streamed", "1",
+                   "-reconnect_delay_max", str(dvrConfig["FFMPEG"]['streamReconnectDelay']), "-async", "1", "-re", "-i",
+                   self.stream,
+                   "-q:v", str(dvrConfig["FFMPEG"]['videoQuality']), "-acodec", "mp3", "-vcodec", "copy", "-f",
+                   "mpegts",
                    "-"]
             try:
                 self.__subprocess = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, bufsize=0)

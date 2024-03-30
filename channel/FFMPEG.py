@@ -1,13 +1,14 @@
-import os
-import subprocess
-import random
-import threading
-import math
-from channel.buffer import buffer
-from epg.item import item
-from datetime import datetime, timedelta
-from config import dvrConfig
 import logging
+import math
+import os
+import random
+import subprocess
+import threading
+from datetime import datetime, timedelta
+
+from channel.buffer import buffer
+from config import dvrConfig
+from epg.item import item
 
 
 class FFMPEG:
@@ -74,13 +75,16 @@ class FFMPEG:
                     for seasonFile in os.listdir('%s/%s' % (path, file)):
                         if self.isScannedFileVideo(seasonFile):
                             self.showPaths.append('%s/%s/%s' % (path, file, seasonFile))
-        self.logger.debug("Scanning shows for channel %s complete - %s shows found" % (self.name, str(len(self.showPaths))))
+        self.logger.debug(
+            "Scanning shows for channel %s complete - %s shows found" % (self.name, str(len(self.showPaths))))
         self.shuffleShows()
 
     def getShow(self):
         if dvrConfig["EPG"]["generate"]:
             self.logger.debug("Getting show + StartTime for channel %s" % self.name)
-            availShows = sorted([item for name, item in self.epgData.items() if item.endTime > datetime.now() + timedelta(minutes=2)], key=lambda epgItem: epgItem.startTime)
+            availShows = sorted(
+                [item for name, item in self.epgData.items() if item.endTime > datetime.now() + timedelta(minutes=2)],
+                key=lambda epgItem: epgItem.startTime)
             self.logger.debug("Found %s available Shows" % len(availShows))
             if len(availShows) == 0:
                 self.logger.warning("Available show list Empty")

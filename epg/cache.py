@@ -1,4 +1,5 @@
 import os
+
 import yaml
 
 
@@ -8,7 +9,7 @@ class cache:
         if not os.path.isdir("cache"):
             print("Creating base cache dir")
             os.mkdir("cache")
-        self.cache = {"items":{}}
+        self.cache = {"items": {}}
         self.cacheLoaded = False
 
     def getItemFromCache(self, itemName):

@@ -12,7 +12,7 @@ services:
     build:
       context: .
     volumes:
-        - /Volumes/Storage:/Volumes/Storage
+      - /Volumes/Storage:/Volumes/Storage
     ports:
       - 5004:5004
 
