@@ -23,7 +23,6 @@ jobs:
       - name: Extract Branch Name
         id: vars
         run: |
-          echo ::set-output name=tag::$(date +%F-%H%M%S)
           echo ::set-output name=repo::${GITHUB_REPOSITORY@L}
 
       - name: Build and push
@@ -32,4 +31,4 @@ jobs:
           platforms: linux/amd64,linux/arm64/v8
           provenance: false
           push: true
-          tags: ghcr.io/${{ steps.vars.outputs.repo }}:${{ steps.vars.outputs.tag }}
+          tags: ghcr.io/${{ steps.vars.outputs.repo }}:latest
