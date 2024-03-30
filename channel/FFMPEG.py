@@ -14,22 +14,13 @@ class FFMPEG:
 
     def __init__(self, channelDef):
         self.id = channelDef["id"]
-        self.name = channelDef["name"]
-        self.logger = logging.getLogger("FFMPEG-%s"%self.name)
+        self.name = channelDef.get("name", "%s" % self.id)
+        self.logger = logging.getLogger("FFMPEG-%s" % self.name)
         self.url = '%s/stream/%s' % (dvrConfig["Server"]['url'], self.id)
         self.scanDir = channelDef["baseDir"]
-        if "showDirs" in channelDef:
-            self.scanPaths = channelDef["showDirs"]
-        else:
-            self.scanPaths = [""]
-        if "videoQuality" in channelDef:
-            self.videoQuality = channelDef["videoQuality"]
-        else:
-            self.videoQuality = dvrConfig["FFMPEG"]['videoQuality']
-        if "resolution" in channelDef:
-            self.resolution = channelDef["resolution"]
-        else:
-            self.resolution = [1280, 720]  # Default output resolution to 720p
+        self.scanPaths = channelDef.get("showDirs", [""])
+        self.videoQuality = channelDef.get("videoQuality", dvrConfig["FFMPEG"]['videoQuality'])
+        self.resolution = channelDef.get("resolution", [1280, 720])
         self.showPaths = []
         self.watchedShows = []
         self.epgData = {}
@@ -130,6 +121,9 @@ class FFMPEG:
             self.__channelOnAir = False
 
     def runChannel(self):
+        if self.__channelOnAir:
+            self.logger.warning("Received duplicate request to start the channel")
+            return
         self.__channelOnAir = True
         while True:
             showData = self.getShow()

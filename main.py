@@ -76,7 +76,7 @@ def stream(channel):
 
 @app.route('/lineup_status.json')
 def status():
-    status = {'ScanInProgress': 0,'ScanPossible': 0, 'Source': 'Cable', 'SourceList':['Cable']}
+    status = {'ScanInProgress': 0, 'ScanPossible': 0, 'Source': 'Cable', 'SourceList':['Cable']}
     return jsonify(status)
 
 

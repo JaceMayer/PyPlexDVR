@@ -56,6 +56,9 @@ class stream:
         return buffer
 
     def runChannel(self):
+        if self.__channelOnAir:
+            self.logger.warning("Received duplicate request to start the channel")
+            return
         self.__channelOnAir = True
         lastFrameT = time.time()
         while True:
