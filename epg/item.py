@@ -2,7 +2,7 @@ import moviepy.editor as mp
 import tvdb_v4_official
 
 from config import dvrConfig
-from .cache import cache
+from .cache import getCache
 
 
 class item:
@@ -34,9 +34,8 @@ class item:
         if title == "":
             title = self.path.split(self.baseDir)[1][1:-3]
         self.title = title.encode('utf-8').strip().decode()
-        EPGcache = cache(self.title)
-        EPGcache.loadCacheIfExists()
-        if not EPGcache.cacheLoaded:
+        EPGcache = getCache(self.title)
+        if not EPGcache.hasEPGDesc():
             self.t = tvdb_v4_official.TVDB(dvrConfig["EPG"]["TMDBAPIKey"])
             try:
                 show = self.t.search(self.title)
@@ -54,11 +53,9 @@ class item:
                 EPGcache.cache["title"] = self.title
                 EPGcache.cache["desc"] = self.desc
             EPGcache.addItemToCache(self.path, self.length)
-            EPGcache.saveCacheToDisk()
         elif EPGcache.getItemFromCache(self.path) is None:
             self.length = self.getLength()
             EPGcache.addItemToCache(self.path, self.length)
-            EPGcache.saveCacheToDisk()
         else:
             self.length = EPGcache.getItemFromCache(self.path)
             self.desc = EPGcache.cache["desc"]
