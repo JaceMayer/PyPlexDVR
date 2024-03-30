@@ -12,17 +12,22 @@ app = Flask(__name__)
 channelMap = {
 }
 
+channelID = 0
+
 # Defines and sets up FFMPEG channels
 if "Channels" in dvrConfig:
     for channelDef in dvrConfig["Channels"]:
-        channelDef["id"] = "ffmpeg-"+str(channelDef["id"])
+        channelDef["id"] = "ffmpeg-"+str(channelID)
         channelMap[channelDef["id"]] = FFMPEG(channelDef)
+        channelID += 1
 
+channelID = 0
 # Defines and sets up streaming channels
 if "Streams" in dvrConfig:
     for channelDef in dvrConfig["Streams"]:
-        channelDef["id"] = "stream-"+str(channelDef["id"])
+        channelDef["id"] = "stream-"+str(channelID)
         channelMap[channelDef["id"]] = stream(channelDef)
+        channelID += 1
 
 discoverData = {
     'BaseURL': dvrConfig["Server"]['url'],

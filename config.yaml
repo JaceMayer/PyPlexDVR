@@ -5,12 +5,10 @@
 # showDirs [Optional] shows to be re-cursed into as baseDir/showdir/Season/file
 Channels:
 - baseDir: /path/to/shows/
-  id: 0
   name: TV Channel
   showDirs:
   - Show Directories
 - baseDir: /path/to/movies
-  id: 1
   name: Movie Channel
 # HTTP based stream channels
 # name defines the name that shows in the EPG
@@ -18,7 +16,6 @@ Channels:
 # url sets the remote stream to connect to
 Streams:
   - name: BBC One North West
-    id: 2
     url: https://vs-cmaf-pushb-uk-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_one_north_west/pc_hd_abr_v2.mpd
 DVR:
   friendlyName: PyPlexDVR # The name of the DVR in plex
