@@ -21,7 +21,7 @@ DVR:
   friendlyName: PyPlexDVR # The name of the DVR in plex
   tunerCount: 100 # The amount of channels that can be concurrently watched in plex
 EPG:
-  TMDBAPIKey: API Key # API Key for TheMovieDatabase, used to scrape EPG data
+  TVDBAPIKey: API Key # API Key for TheTVDatabase, used to scrape EPG data
   generate: true # true/false to set EPG Generation
 FFMPEG:
   videoQuality: 6 # FFMPEG video quality (32 being worst, 2 being best)

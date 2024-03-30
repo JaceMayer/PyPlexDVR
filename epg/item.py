@@ -16,7 +16,7 @@ class item:
         self.endTime = None
         if channelBaseDir is not None:
             if dvrConfig["EPG"]["generate"]:
-                self.getEPGData_TMDB()
+                self.getEPGData_TVDB()
             else:
                 self.getEPGData_FS()
 
@@ -52,14 +52,14 @@ class item:
             self.desc = EPGcache.cache["desc"]
             self.title = EPGcache.cache["title"]
 
-    def getEPGData_TMDB(self):
+    def getEPGData_TVDB(self):
         title = self.path.split(self.baseDir)[1].split('/')[0]
         if title == "":
             title = self.path.split(self.baseDir)[1][1:-3]
         self.title = title.encode('utf-8').strip().decode()
         EPGcache = getCache(self.title)
         if not EPGcache.hasEPGDesc():
-            self.t = tvdb_v4_official.TVDB(dvrConfig["EPG"]["TMDBAPIKey"])
+            self.t = tvdb_v4_official.TVDB(dvrConfig["EPG"]["TVDBAPIKey"])
             try:
                 show = self.t.search(self.title)
                 self.desc = show[0]['overview']
