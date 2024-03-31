@@ -18,15 +18,19 @@ class FFMPEG(channel):
         super().__init__(channelDef)
         self.scanDir = channelDef["baseDir"]
         self.scanPaths = channelDef.get("showDirs", [""])
+        self.randomType = channelDef.get("random", "episode").lower()
+        if self.randomType not in ("episode", "show"):
+            raise AttributeError("Channel random type must be either episode or show.")
 
         self.showPaths = []
+        self.epgOrder = []
         self.epgData = {}
         self.scanShows()
         self.createEPGItems()
 
     def createEPGItems(self):
         time = datetime.now()
-        for show in self.showPaths:
+        for show in self.epgOrder:
             self.epgData[show] = item(show, self.scanDir)
             self.epgData[show].startTime = datetime.fromtimestamp(time.timestamp())
             time += timedelta(minutes=math.ceil(self.epgData[show].length))
@@ -40,26 +44,49 @@ class FFMPEG(channel):
         return True
 
     def shuffleShows(self):
-        random.shuffle(self.showPaths)
-        random.shuffle(self.showPaths)
-        random.shuffle(self.showPaths)
+        if self.randomType == "episode":
+            shows = []
+            for show in self.showPaths:
+                shows += show
+            random.shuffle(shows)
+            random.shuffle(shows)
+            random.shuffle(shows)
+            self.epgOrder = shows
+        else:
+            shows = []
+            showPaths = self.showPaths
+            for i in range(sum(len(s) for s in self.showPaths)):
+                show = random.randint(0, len(showPaths)-1)
+                episode = random.choice(showPaths[show])
+                showPaths[show].remove(episode)
+                if len(showPaths[show]) == 0:
+                    del showPaths[show]
+                shows.append(episode)
+                self.epgOrder = shows
+
 
     def scanShows(self):
         for path in self.scanPaths:
-            path = self.scanDir + path
+            scanValues = []
+            path = self.scanDir + str(path)
             for file in os.listdir(path):
-                if file.startswith('.') or file.endswith(".part"): continue
+                if file.startswith('.') or file.endswith(".part"):
+                    continue
                 if os.path.isfile('%s/%s' % (path, file)):
                     if self.isScannedFileVideo(file):
-                        self.showPaths.append('%s/%s' % (path, file))
+                        scanValues.append('%s/%s' % (path, file))
                     else:
                         self.logger.warning("Unknown File Extension encountered %s/%s" % (path, file))
                 else:
                     for seasonFile in os.listdir('%s/%s' % (path, file)):
                         if self.isScannedFileVideo(seasonFile):
-                            self.showPaths.append('%s/%s/%s' % (path, file, seasonFile))
+                            scanValues.append('%s/%s/%s' % (path, file, seasonFile))
+            if len(scanValues) != 0:
+                self.showPaths.append(scanValues)
         self.logger.debug(
-            "Scanning shows for channel %s complete - %s shows found" % (self.name, str(len(self.showPaths))))
+            "Scanning shows for channel %s complete - %s shows found" % (self.name, str(sum(len(s) for s in self.showPaths))))
+        if len(self.showPaths) == 0:
+            raise Exception("No shows found for channel %s." % self.name)
         self.shuffleShows()
 
     def getShow(self):
@@ -105,14 +132,8 @@ class FFMPEG(channel):
             except Exception as e:
                 self.logger.error("Error during FFMPEG execution:", e)
                 return
-            line = self._subprocess.stdout.read(1024)
-            while True:
+            while line := self._subprocess.stdout.read(1024):
                 if not self._channelOnAir:
                     self._thread = None
                     return
-                if line == b'':
-                    self._subprocess.poll()
-                    if isinstance(self._subprocess.returncode, int):
-                        break
                 for buffer in self.buffer: buffer.append(line)
-                line = self._subprocess.stdout.read(1024)

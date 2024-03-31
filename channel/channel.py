@@ -38,4 +38,4 @@ class channel:
 
     # Stub function to be overridden by subclasses
     def runChannel(self):
-        pass
+        raise NotImplementedError()
