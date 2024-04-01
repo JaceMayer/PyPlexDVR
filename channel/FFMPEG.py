@@ -132,8 +132,14 @@ class FFMPEG(channel):
             except Exception as e:
                 self.logger.error("Error during FFMPEG execution:", e)
                 return
-            while line := self._subprocess.stdout.read(1024):
+            line = self._subprocess.stdout.read(1024)
+            while True:
                 if not self._channelOnAir:
                     self._thread = None
                     return
+                if line == b'':
+                    self._subprocess.poll()
+                    if isinstance(self._subprocess.returncode, int):
+                        break
                 for buffer in self.buffer: buffer.append(line)
+                line = self._subprocess.stdout.read(1024)
