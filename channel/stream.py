@@ -19,16 +19,6 @@ class stream(channel):
         self.epgData["stream"].startTime = "20240101000001"
         self.epgData["stream"].endTime = "20440101000001"
 
-    def getBlankVideo(self):
-        cmd = ["ffmpeg", "-v", "error", "-i", "assets/channelUnavailable.mp4", "-f", "mpegts", "-"]
-        __subprocess = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, bufsize=0)
-        buffer = b''
-        line = __subprocess.stdout.read(1024)
-        while line != b'':
-            buffer += line
-            line = __subprocess.stdout.read(1024)
-        return buffer
-
     def runChannel(self):
         if self._channelOnAir:
             self.logger.warning("Received duplicate request to start the channel")
@@ -50,8 +40,7 @@ class stream(channel):
                 self.logger.error("Error during FFMPEG execution:", e)
                 if time.time() - lastFrameT > 1:
                     lastFrameT = time.time()
-                    frame = self.getBlankVideo()
-                    for buffer in self.buffer: buffer.append(frame)
+                    for buffer in self.buffer: buffer.append(self.blankVideo)
                 continue
             line = b''
             while True:
@@ -61,8 +50,7 @@ class stream(channel):
                 if line == b'':
                     self._subprocess.poll()
                     if isinstance(self._subprocess.returncode, int):
-                        frame = self.getBlankVideo()
-                        for buffer in self.buffer: buffer.append(frame)
+                        for buffer in self.buffer: buffer.append(self.blankVideo)
                         break
                 if subprocessPoll.poll(0.001):
                     lastFrameT = time.time()
@@ -71,5 +59,4 @@ class stream(channel):
                 elif time.time() - lastFrameT > 1:
                     lastFrameT = time.time()
                     self.logger.warning("No FFMPEG data received in 1 seconds")
-                    frame = self.getBlankVideo()
-                    for buffer in self.buffer: buffer.append(frame)
+                    for buffer in self.buffer: buffer.append(self.blankVideo)
