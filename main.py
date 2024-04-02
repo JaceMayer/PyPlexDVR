@@ -17,19 +17,17 @@ channelMap = {
 channelID = 0
 
 # Defines and sets up FFMPEG channels
-if "Channels" in dvrConfig:
-    for channelDef in dvrConfig["Channels"]:
-        channelDef["id"] = "ffmpeg-" + str(channelID)
-        channelMap[channelDef["id"]] = FFMPEG(channelDef)
-        channelID += 1
+for channelDef in dvrConfig.get("Channels", []):
+    channelDef["id"] = "ffmpeg-" + str(channelID)
+    channelMap[channelDef["id"]] = FFMPEG(channelDef)
+    channelID += 1
 
 channelID = 0
 # Defines and sets up streaming channels
-if "Streams" in dvrConfig:
-    for channelDef in dvrConfig["Streams"]:
-        channelDef["id"] = "stream-" + str(channelID)
-        channelMap[channelDef["id"]] = stream(channelDef)
-        channelID += 1
+for channelDef in dvrConfig.get("Streams", []):
+    channelDef["id"] = "stream-" + str(channelID)
+    channelMap[channelDef["id"]] = stream(channelDef)
+    channelID += 1
 
 discoverData = {
     'BaseURL': dvrConfig["Server"]['url'],
@@ -84,8 +82,4 @@ def status():
 
 @app.route('/lineup.json')
 def lineup():
-    lineup = []
-    for channel in channelMap.keys():
-        cl = channelMap[channel]
-        lineup.append({"GuideName": cl.name, "GuideNumber": cl.id, "URL": cl.url})
-    return jsonify(lineup)
+    return jsonify([{"GuideName": cl.name, "GuideNumber": cl.id, "URL": cl.url} for cl in channelMap.values()])
