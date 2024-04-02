@@ -1,4 +1,5 @@
 import logging
+import subprocess
 import threading
 
 from channel.buffer import buffer
@@ -34,10 +35,32 @@ class channel:
         self.buffer.remove(buffer)
         if len(self.buffer) == 0:
             self.logger.debug("Channel has 0 watchers, terminating FFMPEG")
-            self._subprocess.kill()
-            self._subprocess = None
             self._channelOnAir = False
 
     # Stub function to be overridden by subclasses
-    def runChannel(self):
+    def getFFMPEGCmd(self):
         raise NotImplementedError()
+
+    def runChannel(self):
+        if self._channelOnAir:
+            self.logger.warning("Received duplicate request to start the channel")
+            return
+        self._channelOnAir = True
+        while True:
+            try:
+                self._subprocess = subprocess.Popen(self.getFFMPEGCmd(), stdin=subprocess.PIPE, stdout=subprocess.PIPE, bufsize=0)
+            except Exception as e:
+                self.logger.error("Error during FFMPEG execution:", e)
+                return
+            while (line := self._subprocess.stdout.read(1024)) and self._channelOnAir:
+                for buffer in self.buffer: buffer.append(line)
+            if not self._channelOnAir:
+                self._subprocess.communicate(b'q')
+                self._subprocess.terminate()
+                self._subprocess.poll()
+                if self._subprocess.returncode is None:
+                    self.logger.error("Subprocess failed to Terminate")
+                    self._subprocess.kill()
+                self._subprocess = None
+                return
+
