@@ -14,21 +14,20 @@ class buffer:
     def append(self, data):
         self.__buffer.append(data)
 
+    def getAndFlushBuffer(self):
+        val = b''.join(self.__buffer)
+        self.__buffer = []
+        return val
+
     def pop(self, index):
         if time.time() < self.__startTime + dvrConfig["Client"]['initalBufferTime'] and not self.__sentInitialBurst:
             return b''
         elif time.time() > self.__startTime + dvrConfig["Client"]['initalBufferTime'] and not self.__sentInitialBurst:
             self.__sentInitialBurst = True
-            val = b''
-            for i in range(len(self.__buffer)):
-                val += self.__buffer.pop(index)
-            return val
+            return self.getAndFlushBuffer()
         if self.__buffer is not None and len(self.__buffer) != 0:
             if len(self.__buffer) > dvrConfig["Client"]['maxBufferSize']:
-                val = b''
-                for i in range(len(self.__buffer)):
-                    val += self.__buffer.pop(index)
-                return val
+                return self.getAndFlushBuffer()
             return self.__buffer.pop(index)
 
         return b''
