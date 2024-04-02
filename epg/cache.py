@@ -18,9 +18,7 @@ class cache:
         return self.cacheLoaded or "title" in self.cache
 
     def getItemFromCache(self, itemName):
-        if itemName in self.cache["items"]:
-            return self.cache["items"][itemName]
-        return None
+        return self.cache["items"].get(itemName, None)
 
     def addItemToCache(self, itemName, length):
         self.cache["items"][itemName] = length
