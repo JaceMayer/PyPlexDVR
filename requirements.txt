@@ -4,3 +4,4 @@ moviepy
 pyyaml
 gevent
 Gunicorn
+watchdog

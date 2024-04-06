@@ -8,6 +8,8 @@ channelMap = {
 }
 
 channelID = 0
+# Sets useWatchdog to False, as we don't need it in cache generation
+dvrConfig["Server"]['useWatchdog'] = False
 
 # Defines and sets up FFMPEG channels
 for channelDef in dvrConfig.get("Channels", []):

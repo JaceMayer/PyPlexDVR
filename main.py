@@ -62,6 +62,8 @@ def epg():
 
 @app.route('/stream/<channel>')
 def stream(channel):
+    if channelMap[channel].pendingReboot:
+        return "Channel Rebooting", 500
     def generate(channel):
         buffer = channelMap[channel].createBuffer()
         try:
