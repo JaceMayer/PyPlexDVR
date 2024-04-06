@@ -18,6 +18,7 @@ class channel:
         self._thread = None
         self.videoQuality = channelDef.get("videoQuality", dvrConfig["FFMPEG"]['videoQuality'])
         self.resolution = channelDef.get("resolution", [1280, 720])
+        self.pendingReboot = False
         with open("assets/channelUnavailable.ts", "rb") as blankTS:
             self.blankVideo = blankTS.read()
 
