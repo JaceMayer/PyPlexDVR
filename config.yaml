@@ -35,3 +35,4 @@ Server:
   url: http://127.0.0.1:5004 # URL used for lineup and epg
   gunicornThreads: 1 # Threads gunicorn uses to handle requests
   gunicornWorkers: 1 # Number of workers gunicorn is to spawn
+  useWatchdog: true # Whether to use WatchDog Polling for file system changes

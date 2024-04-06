@@ -4,7 +4,10 @@ import random
 from datetime import datetime, timedelta
 
 from channel.channel import channel
+from channel.WatchDog import WatchDogObserver
 from epg.item import item
+from epg.cache import cacheMap
+from config import dvrConfig
 
 
 class FFMPEG(channel):
@@ -16,12 +19,41 @@ class FFMPEG(channel):
         self.randomType = channelDef.get("random", "episode").lower()
         if self.randomType not in ("episode", "show"):
             raise AttributeError("Channel random type must be either episode or show.")
-
+        if dvrConfig["Server"]['useWatchdog']:
+            self.watchDog = WatchDogObserver(self.scanDir, self.scanPaths, self)
+        self.pendingReboot = True
         self.showPaths = []
         self.epgOrder = []
         self.epgData = {}
         self.scanShows()
         self.createEPGItems()
+
+    def pendReboot(self):
+        self.pendingReboot = True
+        if len(self.buffer) != 0:
+            self.logger.debug("Queueing channel reboot - will take place when clients have disconnected")
+        else:
+            self.rebootChannel()
+
+    def rebootChannel(self):
+        self.logger.debug("Rebooting channel...")
+        self.showPaths = []
+        self.epgOrder = []
+        self.epgData = {}
+        self.scanShows()
+        self.createEPGItems()
+        for cache in cacheMap.values():
+            cache.saveCacheToDisk()
+
+    def createBuffer(self):
+        if self.pendingReboot:
+            return None
+        return super().createBuffer()
+
+    def removeBuffer(self, buffer):
+        super().removeBuffer(buffer)
+        if not self._channelOnAir:
+            self.rebootChannel()
 
     def createEPGItems(self):
         time = datetime.now()
@@ -30,6 +62,7 @@ class FFMPEG(channel):
             self.epgData[show].startTime = datetime.fromtimestamp(time.timestamp())
             time += timedelta(minutes=math.ceil(self.epgData[show].length))
             self.epgData[show].endTime = datetime.fromtimestamp(time.timestamp())
+        self.pendingReboot = False
 
     def isScannedFileVideo(self, file):
         if file.startswith('.') or file.endswith(".part"):
@@ -69,13 +102,20 @@ class FFMPEG(channel):
                 f = os.path.join(path, file)
                 if os.path.isfile(f):
                     if self.isScannedFileVideo(file):
+                        if not os.access(f, os.R_OK):
+                            self.logger.warning("Do not have read permissions on file %s" % f)
+                            continue
                         scanValues.append(f)
                     else:
                         self.logger.warning("Unknown File Extension encountered %s/%s" % (path, file))
                 else:
                     for seasonFile in os.listdir(f):
                         if self.isScannedFileVideo(seasonFile):
-                            scanValues.append(os.path.join(f, seasonFile))
+                            seasonf = os.path.join(f, seasonFile)
+                            if not os.access(seasonf, os.R_OK):
+                                self.logger.warning("Do not have read permissions on file %s" % seasonf)
+                                continue
+                            scanValues.append(seasonf)
             if len(scanValues) != 0:
                 self.showPaths.append(scanValues)
         self.logger.debug(
@@ -97,6 +137,9 @@ class FFMPEG(channel):
             self.createEPGItems()
             return self.getShow()
         show = availShows.pop(0)
+        if not os.access(show.path, os.R_OK):
+            self.logger.error("Lost read permissions on file %s" % show.path)
+            return "assets/channelUnavailable.ts", datetime.now()
         self.logger.debug('Running show %s' % show.path)
         return show.path, show.startTime
 
