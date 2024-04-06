@@ -62,24 +62,25 @@ class FFMPEG(channel):
     def scanShows(self):
         for path in self.scanPaths:
             scanValues = []
-            path = self.scanDir + str(path)
+            path = os.path.join(self.scanDir, str(path))
             for file in os.listdir(path):
                 if file.startswith('.') or file.endswith(".part"):
                     continue
-                if os.path.isfile('%s/%s' % (path, file)):
+                f = os.path.join(path, file)
+                if os.path.isfile(f):
                     if self.isScannedFileVideo(file):
-                        scanValues.append('%s/%s' % (path, file))
+                        scanValues.append(f)
                     else:
                         self.logger.warning("Unknown File Extension encountered %s/%s" % (path, file))
                 else:
-                    for seasonFile in os.listdir('%s/%s' % (path, file)):
+                    for seasonFile in os.listdir(f):
                         if self.isScannedFileVideo(seasonFile):
-                            scanValues.append('%s/%s/%s' % (path, file, seasonFile))
+                            scanValues.append(os.path.join(f, seasonFile))
             if len(scanValues) != 0:
                 self.showPaths.append(scanValues)
         self.logger.debug(
             "Scanning shows for channel %s complete - %s shows found" % (
-            self.name, str(sum(len(s) for s in self.showPaths))))
+                self.name, str(sum(len(s) for s in self.showPaths))))
         if len(self.showPaths) == 0:
             raise Exception("No shows found for channel %s." % self.name)
         self.shuffleShows()

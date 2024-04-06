@@ -1,3 +1,5 @@
+import os
+
 import moviepy.editor as mp
 import tvdb_v4_official
 
@@ -33,10 +35,7 @@ class item:
             return self.endTime.strftime("%Y%m%d%H%M%S")
 
     def getEPGData_FS(self):
-        title = self.path.split(self.baseDir)[1].split('/')[0]
-        if title == "":
-            title = self.path.split(self.baseDir)[1][1:-3]
-        self.title = title.encode('utf-8').strip().decode()
+        self.title = os.path.splitext(os.path.relpath(self.path, self.baseDir).split(os.sep)[0])[0]
         EPGcache = getCache(self.title)
         if not EPGcache.hasEPGDesc():
             self.desc = self.title
@@ -53,10 +52,7 @@ class item:
             self.title = EPGcache.cache["title"]
 
     def getEPGData_TVDB(self):
-        title = self.path.split(self.baseDir)[1].split('/')[0]
-        if title == "":
-            title = self.path.split(self.baseDir)[1][1:-3]
-        self.title = title.encode('utf-8').strip().decode()
+        self.title = os.path.splitext(os.path.relpath(self.path, self.baseDir).split(os.sep)[0])[0]
         EPGcache = getCache(self.title)
         if not EPGcache.hasEPGDesc():
             self.t = tvdb_v4_official.TVDB(dvrConfig["EPG"]["TVDBAPIKey"])
