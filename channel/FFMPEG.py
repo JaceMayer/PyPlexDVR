@@ -102,13 +102,20 @@ class FFMPEG(channel):
                 f = os.path.join(path, file)
                 if os.path.isfile(f):
                     if self.isScannedFileVideo(file):
+                        if not os.access(f, os.R_OK):
+                            self.logger.warning("Do not have read permissions on file %s" % f)
+                            continue
                         scanValues.append(f)
                     else:
                         self.logger.warning("Unknown File Extension encountered %s/%s" % (path, file))
                 else:
                     for seasonFile in os.listdir(f):
                         if self.isScannedFileVideo(seasonFile):
-                            scanValues.append(os.path.join(f, seasonFile))
+                            seasonf = os.path.join(f, seasonFile)
+                            if not os.access(seasonf, os.R_OK):
+                                self.logger.warning("Do not have read permissions on file %s" % seasonf)
+                                continue
+                            scanValues.append(seasonf)
             if len(scanValues) != 0:
                 self.showPaths.append(scanValues)
         self.logger.debug(
@@ -130,6 +137,9 @@ class FFMPEG(channel):
             self.createEPGItems()
             return self.getShow()
         show = availShows.pop(0)
+        if not os.access(show.path, os.R_OK):
+            self.logger.error("Lost read permissions on file %s" % show.path)
+            return "assets/channelUnavailable.ts", datetime.now()
         self.logger.debug('Running show %s' % show.path)
         return show.path, show.startTime
 
