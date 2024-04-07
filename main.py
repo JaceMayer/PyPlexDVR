@@ -1,3 +1,6 @@
+import time
+import threading
+
 from gevent import monkey, sleep
 
 monkey.patch_all()
@@ -30,8 +33,19 @@ for channelDef in dvrConfig.get("Streams", []):
     channelMap[channelDef["id"]] = stream(channelDef)
     channelID += 1
 
+
+def updateEPGTask():
+    while True:
+        time.sleep(10800)  # Sleep for 3 hours
+        for cl in channelMap.values():
+            if isinstance(cl, FFMPEG):
+                cl.ensureEPGWontEmpty()
+        refreshEPG()
+
+
 with app.app_context():
     refreshEPG()
+    threading.Thread(target=updateEPGTask, args=()).start()
 
 discoverData = {
     'BaseURL': dvrConfig["Server"]['url'],
