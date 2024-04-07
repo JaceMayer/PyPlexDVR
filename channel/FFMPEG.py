@@ -52,7 +52,7 @@ class FFMPEG(channel):
 
     def removeBuffer(self, buffer):
         super().removeBuffer(buffer)
-        if not self._channelOnAir:
+        if not self._channelOnAir and self.pendingReboot:
             self.rebootChannel()
 
     def createEPGItems(self):
