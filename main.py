@@ -30,6 +30,8 @@ for channelDef in dvrConfig.get("Streams", []):
     channelMap[channelDef["id"]] = stream(channelDef)
     channelID += 1
 
+with app.app_context():
+    refreshEPG()
 
 discoverData = {
     'BaseURL': dvrConfig["Server"]['url'],
