@@ -8,6 +8,7 @@ from channel.WatchDog import WatchDogObserver
 from epg.item import item
 from epg.cache import cacheMap
 from config import dvrConfig
+from plex import refreshEPG
 
 
 class FFMPEG(channel):
@@ -44,6 +45,7 @@ class FFMPEG(channel):
         self.createEPGItems()
         for cache in cacheMap.values():
             cache.saveCacheToDisk()
+        refreshEPG()
 
     def createBuffer(self):
         if self.pendingReboot:

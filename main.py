@@ -8,6 +8,7 @@ from flask import Flask, Response, jsonify, render_template, stream_with_context
 from channel.FFMPEG import FFMPEG
 from channel.stream import stream
 from config import dvrConfig
+from plex import refreshEPG
 
 app = Flask(__name__)
 
@@ -28,6 +29,7 @@ for channelDef in dvrConfig.get("Streams", []):
     channelDef["id"] = "stream-" + str(channelID)
     channelMap[channelDef["id"]] = stream(channelDef)
     channelID += 1
+
 
 discoverData = {
     'BaseURL': dvrConfig["Server"]['url'],
