@@ -33,8 +33,8 @@ Plex:
   enable: false # Set this to true to enable plex API
   username: username # Your Plex.tv username
   password: password # Your Plex.tv password
-  server: MyPlexServer # The name of your plex server
-  dvrID: 1 # The ID of your DVR (obtainable using Inspect Element to view network requesst to refresh your DVR EPG)
+  server: MyPlexServer # The name of your plex server in the Plex App - e.g. Plex-0, my-mac-mini. Plex API will send the requests directly if possible, or will proxy it via Plex.tv
+  dvrID: 1 # The ID of your DVR (obtainable using Inspect Element to view network requests to refresh your DVR EPG)
 Server:
   bindAddr: 0.0.0.0 # gunicorn bind address
   bindPort: '5004' # gunicorn bind port
