@@ -8,6 +8,7 @@ from channel.WatchDog import WatchDogObserver
 from epg.item import item
 from epg.cache import cacheMap
 from config import dvrConfig
+from plex import refreshEPG
 
 
 class FFMPEG(channel):
@@ -44,6 +45,7 @@ class FFMPEG(channel):
         self.createEPGItems()
         for cache in cacheMap.values():
             cache.saveCacheToDisk()
+        refreshEPG()
 
     def createBuffer(self):
         if self.pendingReboot:
@@ -54,6 +56,28 @@ class FFMPEG(channel):
         super().removeBuffer(buffer)
         if not self._channelOnAir and self.pendingReboot:
             self.rebootChannel()
+
+    def ensureEPGWontEmpty(self):
+        availShows = sorted(
+            [item for name, item in self.epgData.items() if item.endTime > datetime.now() + timedelta(minutes=2)],
+            key=lambda epgItem: epgItem.startTime)
+        if len(availShows) == 0:
+            self.logger.warning("Available show list Empty")
+            self.shuffleShows()
+            self.createEPGItems()
+            return
+        else:
+            self.shuffleShows()
+            for show in availShows:
+                if show.path in self.epgOrder:
+                    self.logger.debug("Removing show %s from EPGOrder as it exists" % show.path)
+                    self.epgOrder.remove(show.path)
+            time = availShows[-1].endTime
+            for show in self.epgOrder:
+                self.epgData[show] = item(show, self.scanDir)
+                self.epgData[show].startTime = datetime.fromtimestamp(time.timestamp())
+                time += timedelta(minutes=math.ceil(self.epgData[show].length))
+                self.epgData[show].endTime = datetime.fromtimestamp(time.timestamp())
 
     def createEPGItems(self):
         time = datetime.now()

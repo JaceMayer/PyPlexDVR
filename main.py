@@ -1,3 +1,6 @@
+import time
+import threading
+
 from gevent import monkey, sleep
 
 monkey.patch_all()
@@ -8,6 +11,7 @@ from flask import Flask, Response, jsonify, render_template, stream_with_context
 from channel.FFMPEG import FFMPEG
 from channel.stream import stream
 from config import dvrConfig
+from plex import refreshEPG
 
 app = Flask(__name__)
 
@@ -28,6 +32,20 @@ for channelDef in dvrConfig.get("Streams", []):
     channelDef["id"] = "stream-" + str(channelID)
     channelMap[channelDef["id"]] = stream(channelDef)
     channelID += 1
+
+
+def updateEPGTask():
+    while True:
+        time.sleep(10800)  # Sleep for 3 hours
+        for cl in channelMap.values():
+            if isinstance(cl, FFMPEG):
+                cl.ensureEPGWontEmpty()
+        refreshEPG()
+
+
+with app.app_context():
+    refreshEPG()
+    threading.Thread(target=updateEPGTask, args=()).start()
 
 discoverData = {
     'BaseURL': dvrConfig["Server"]['url'],
