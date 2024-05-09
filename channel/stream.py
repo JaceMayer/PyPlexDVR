@@ -16,9 +16,16 @@ class stream(channel):
         self.epgData["stream"].endTime = "20440101000001"
 
     def getFFMPEGCmd(self):
-        return ["ffmpeg", "-v", "error", "-reconnect_at_eof", "1", "-reconnect_streamed", "1",
-                "-reconnect_delay_max", str(dvrConfig["FFMPEG"]['streamReconnectDelay']), "-async", "1", "-re", "-i",
-                self.stream,
-                "-q:v", str(self.videoQuality), "-acodec", "mp3", "-vcodec", "copy", "-f",
-                "mpegts",
-                "-"]
+        if not self.stream.endswith("m3u8"):
+            return ["ffmpeg", "-v", "error", "-reconnect_at_eof", "1", "-reconnect_streamed", "1",
+                    "-reconnect_delay_max", str(dvrConfig["FFMPEG"]['streamReconnectDelay']), "-async", "1", "-re", "-i",
+                    self.stream,
+                    "-q:v", str(self.videoQuality), "-acodec", "mp3", "-vcodec", "copy", "-f",
+                    "mpegts",
+                    "-"]
+        else:
+            return ["ffmpeg", "-v", "error", "-async", "1", "-re", "-i",
+                    self.stream,
+                    "-q:v", str(self.videoQuality), "-acodec", "mp3", "-vcodec", "copy", "-f",
+                    "mpegts",
+                    "-"]
