@@ -1,5 +1,6 @@
 import time
 import threading
+import uuid
 
 from gevent import monkey, sleep
 
@@ -100,6 +101,9 @@ def status():
     return jsonify({'ScanInProgress': 0, 'ScanPossible': 0, 'Source': 'Cable', 'SourceList': ['Cable']})
 
 
+def get_uuid(string_length=10):
+    return str(uuid.uuid4()).upper().replace("-", "")[0:string_length]
+
 @app.route('/lineup.json')
 def lineup():
-    return jsonify([{"GuideName": cl.name, "GuideNumber": cl.id, "URL": cl.url} for cl in channelMap.values()])
+    return jsonify([{"GuideName": cl.name, "GuideNumber": cl.id, "URL": cl.url + "?nonce=" + get_uuid()} for cl in channelMap.values()])
