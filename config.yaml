@@ -20,6 +20,7 @@ Streams:
 DVR:
   friendlyName: PyPlexDVR # The name of the DVR in plex
   tunerCount: 100 # The amount of channels that can be concurrently watched in plex
+  UUID: 12345678-1234-1234-1234-123456789012 # The UUID of the DVR, used to allow multiple DVRs to be used simultaneously in Plex
 EPG:
   TVDBAPIKey: API Key # API Key for TheTVDatabase, used to scrape EPG data
   generate: true # true/false to set EPG Generation

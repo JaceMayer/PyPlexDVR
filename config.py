@@ -7,7 +7,7 @@ with open("config.yaml", 'r') as stream:
     dvrConfig = yaml.safe_load(stream)
 
 environKeys = ["plex_enable", "plex_username", "plex_password", "plex_server", "plex_dvrID",
-               "server_useWatchdog", "epg_TVDBAPIKey", "epg_generate"]
+               "server_useWatchdog", "epg_TVDBAPIKey", "epg_generate", "DVR_UUID"]
 for k in environKeys:
     v = os.environ.get(k)
     if v is not None:
