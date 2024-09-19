@@ -50,7 +50,7 @@ with app.app_context():
     threading.Thread(target=updateEPGTask, args=()).start()
 
 def getDVRUUID():
-    if dvrConfig["DVR"]["UUID"] is None or dvrConfig["DVR"]["UUID"] == "" or dvrConfig["DVR"]["UUID"] == "12345678-1234-1234-1234-123456789012":
+    if dvrConfig["DVR"].get("UUID", None) is None or dvrConfig["DVR"]["UUID"] == "" or dvrConfig["DVR"]["UUID"] == "12345678-1234-1234-1234-123456789012":
         dvrConfig["DVR"]["UUID"] = str(uuid.uuid4())
         # save the new UUID to the config file
         with open("config.yaml", 'r') as stream:
